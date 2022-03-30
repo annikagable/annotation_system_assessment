@@ -8,7 +8,7 @@ rule calc_database_novelty:
     log:
         "logs/calc_database_novelty.log"
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     shell:
         "python scripts/calc_database_novelty.py {input} {output} &> {log}"
         
@@ -21,7 +21,7 @@ rule discard_enriched_term_subsets:
     log:
         "logs/discard_enriched_term_subsets.log"
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     shell:
         "python scripts/discard_enriched_term_subsets.py {input} {output} &> {log}"
 
@@ -35,7 +35,7 @@ rule plot_non_redundant_terms:
     log:
         "logs/plot_non_redundant_terms.log"
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     shell:
         "python scripts/plot_non_redundant_terms.py {input} {output} &> {log}"
 
@@ -50,6 +50,6 @@ rule plot_database_novelty:
     log:
         "logs/plot_database_novelty.log"
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     shell:
         "python scripts/plot_non_redundant_terms.py {input} {output} &> {log}"

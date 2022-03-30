@@ -9,9 +9,9 @@ rule run_cameraPR_nolimits:
     log:
         log_file = "logs/run_cameraPR_nolimits/{dataId}.{taxId}.{db}.log"
     conda:
-        "envs/r363.yml"
+        "../envs/r363.yml"
     script:
-        "scripts/run_cameraPR_nolimits.R"
+        "../scripts/run_cameraPR_nolimits.R"
 
         
 rule get_effect_size_nolimits:
@@ -23,7 +23,7 @@ rule get_effect_size_nolimits:
     log:
         log_file = "logs/get_effect_size_nolimits/{dataId}.{taxId}.{db}.log"
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     shell:
         "python scripts/get_effect_size.py {input.enrichment_file} {input.user_input_file} {output} &> {log}"
         
@@ -71,7 +71,7 @@ rule write_cameraPR_termDf_nolimits:
     log:
         "logs/write_cameraPR_termDf_nolimits.log"
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     shell:
         "python scripts/read_enrichment_results.py {input.enrichment_files_file} {input.species_taxIds_file} {params.alpha} {params.n_grouped_species} {params.enrichment_method} {params.output_dir} &> {log}"
 

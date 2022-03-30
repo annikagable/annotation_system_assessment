@@ -7,7 +7,7 @@
 #     log:
 #         "logs/plot_sig_enrichment_counts.log"
 #     conda:
-#         "envs/r363.yml"
+#         "../envs/r363.yml"
 #     shell:
 #         "Rscript scripts/plot_sig_enrichment_counts.R {input} {output} &> {log}"
 
@@ -24,7 +24,7 @@ rule plot_metrics:
     log:
         "logs/plot_metrics.log"
     conda:
-        "envs/py38_plotting.yml"
+        "../envs/py38_plotting.yml"
     shell:
         "python scripts/plot_metrics.py {input.sigTerm_file} {input.dataId_isSig_file} {params.output_dir} &> {log}"
 
@@ -42,6 +42,6 @@ rule plot_metrics_reduced_species:
     log:
         "logs/plot_metrics_reduced_species.log"
     conda:
-        "envs/py38_plotting.yml"
+        "../envs/py38_plotting.yml"
     shell:
         "python scripts/plot_metrics_reduced_species.py {input.sigTerm_file} {input.dataId_isSig_file} {params.output_dir} &> {log}"

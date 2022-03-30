@@ -1,6 +1,8 @@
 import os
 import glob
 
+#configfile: "config.yaml"
+
 DATABASES = ['STRINGclusters',
              'Reactome',
              'PubMed',
@@ -53,8 +55,6 @@ rule all:
 
 include:
     "rules/filter_and_deduplicate.smk"
-include:
-    "rules/deduplicate_GE_results.smk"
 include:
     "rules/enrichment.smk"
 include:

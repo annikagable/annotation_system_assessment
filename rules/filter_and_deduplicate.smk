@@ -36,11 +36,12 @@ rule all_filtering:
 
 rule filter_inputs:
     input:
-        ancient("data/raw/string_11_0_gene_value_consolidated_input")
+        "data/raw/example_user_queries"
+        #ancient("data/raw/string_11_0_gene_value_consolidated_input")
     output:
         "data/interim/filtered_user_inputs.tsv",
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     params:
         search_for = '*.input.normal.txt',
         min_finite_values = '500',
@@ -58,7 +59,7 @@ checkpoint separate_inputs_by_species:
     output:
         directory("data/interim/species_matrices") # this is where e.g. 9606.tsv files will go for each species
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     shell:
         "python scripts/separate_inputs_by_species.py {input} data/interim/species_matrices"
 
@@ -78,7 +79,7 @@ rule deduplicate_similar_inputs:
     threads:
         workflow.cores
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     log:
         "logs/deduplication/{taxId}.log"
     shell:
@@ -103,11 +104,11 @@ checkpoint apply_deduplication:
         table_out_file = "data/interim/filtered_deduplicated_user_inputs.tsv",
         out_dir = directory("data/interim/filtered_deduplicated_user_inputs")
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     log:
         "logs/deduplication/filter_deduplicated.log"
     script:
-        "scripts/filter_deduplicated.py"
+        "../scripts/filter_deduplicated.py"
 
 
 rule report_filtered_and_deduplicated_count:
@@ -117,7 +118,7 @@ rule report_filtered_and_deduplicated_count:
         report_file = "data/results/filtering_report.txt",
         by_taxId_file = "data/results/deduplicated_user_submission_counts_by_taxId.tsv"
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     shell:
         "python scripts/report_number_of_filtered_deduplicated_inputs.py {input.table_out_file} {output.by_taxId_file} &> {output.report_file}"
 

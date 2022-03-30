@@ -48,7 +48,7 @@ rule write_cameraPR_termDf_downsampled_PubMed:
     log:
         "logs/write_cameraPR_termDf_downsampled_PubMed.log"
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     shell:
         "python scripts/read_enrichment_results.py {input.enrichment_files_file} {input.species_taxIds_file} {params.alpha} {params.n_grouped_species} {params.enrichment_method} {params.output_dir} &> {log}"
         
@@ -71,6 +71,6 @@ rule plot_term_size_v_effect:
     log:
         "logs/plot_term_size_v_effect.log"
     conda:
-        "envs/py38_plotting.yml"
+        "../envs/py38_plotting.yml"
     shell:
         "python scripts/plot_term_size_v_effect.py {input} {output} >& {log}"

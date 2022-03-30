@@ -23,7 +23,7 @@ rule plot_user_input_stats:
     log:
         "logs/plot_user_input_stats.log"
     conda:
-        "envs/py38_plotting.yml"
+        "../envs/py38_plotting.yml"
     shell:
         "python scripts/plot_user_input_statistics.py {input} {output} &> {log}"
         

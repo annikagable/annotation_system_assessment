@@ -9,9 +9,9 @@ rule parse_term_lists:
     log:
         log_file = "logs/parse_term_lists/{taxId}.log"
     conda:
-        "envs/r363.yml"
+        "../envs/r363.yml"
     script:
-        "scripts/parse_term_lists_by_cat.R"
+        "../scripts/parse_term_lists_by_cat.R"
 
 
 rule run_cameraPR:
@@ -27,9 +27,9 @@ rule run_cameraPR:
     log:
         log_file = "logs/run_cameraPR/{dataId}.{taxId}.{db}.log"
     conda:
-        "envs/r363.yml"
+        "../envs/r363.yml"
     script:
-        "scripts/run_cameraPR.R"
+        "../scripts/run_cameraPR.R"
         
 
 
@@ -49,7 +49,7 @@ rule get_effect_size:
     log:
         log_file = "logs/get_effect_size/{dataId}.{taxId}.{db}.log"
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     shell:
         "python scripts/get_effect_size.py {input.enrichment_file} {input.user_input_file} {output} &> {log}"
         
@@ -100,7 +100,7 @@ rule write_cameraPR_termDf:
     log:
         "logs/write_cameraPR_termDf.log"
     conda:
-        "envs/py38_sklearn.yml"
+        "../envs/py38_sklearn.yml"
     shell:
         "python scripts/read_enrichment_results.py {input.enrichment_files_file} {input.species_taxIds_file} {params.alpha} {params.n_grouped_species} {params.enrichment_method} {params.output_dir} &> {log}"
 
