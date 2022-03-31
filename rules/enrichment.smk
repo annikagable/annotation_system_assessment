@@ -1,7 +1,25 @@
+rule ascertain_annotation_is_sorted_by_db:
+    input:
+        members_file = "data/raw/global_enrichment_annotations/{taxId}.terms_members.tsv"
+    output:
+        flag_file = "data/interim/annotation_terms/{taxId}.is.sorted"
+    shell:
+        """
+        uniq_etype_count=$(cut -f2 {input} | sort | uniq | wc -l)
+        etype_count=$(cut -f2 {input} | uniq | wc -l) 
+     
+        if [ "$uniq_etype_count" == "$etype_count" ]; then
+            touch {output}
+        else
+            echo "{input} is not sorted by database (aka etype)!"
+            exit 1
+        fi
+        """
 
 rule parse_term_lists:
     input:
-        members_file = "data/raw/global_enrichment_annotations/{taxId}.terms_members.tsv"
+        members_file = "data/raw/global_enrichment_annotations/{taxId}.terms_members.tsv",
+        flag_file = "data/interim/annotation_terms/{taxId}.is.sorted"
     output:
         expand("data/interim/annotation_terms/{taxId}.term_list.{db}.rds", db = DATABASES, allow_missing = True)
     params:
@@ -11,7 +29,7 @@ rule parse_term_lists:
     conda:
         "../envs/r363.yml"
     script:
-        "../scripts/parse_term_lists_by_cat.R"
+        "../scripts/parse_term_lists_by_db.R"
 
 
 rule run_cameraPR:

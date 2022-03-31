@@ -1,4 +1,5 @@
 # This script will read the terms_members file into an R list and save it into one RDS file per category in a tmp folder.
+# It is important that the terms_members file is sorted by entity type for this script to work.
 # If the number of terms in the category exceeds chunk_size, an intermediate RDS is written every chunk_size lines.
 # In the end, the tmp files are read back into R, combined into one list per category, and written out.
 # I am doing the temporary saving in chunks because R gets so slow while building lists iteratively.
