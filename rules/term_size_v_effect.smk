@@ -1,8 +1,6 @@
-
-
+#FNAMES = glob_wildcards("data/results/cameraPR/effect_size/{fname}").fname
 
 rule downsample_PubMed:
-    #FNAMES = glob_wildcards("data/results/cameraPR/effect_size/{fname}").fname
     input:
         "data/results/cameraPR/aggregation/aggregated.txt"
     output:

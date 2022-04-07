@@ -5,11 +5,11 @@ import glob
 
 DATABASES = ['STRINGclusters',
              'Reactome',
-             'PubMed',
+             #'PubMed',
              'Pfam',
              'InterPro',
              'SMART',
-             'KEGG',
+             #'KEGG',
              'UniProt',
              'GO_MF',
              'GO_CC',
@@ -20,6 +20,9 @@ DATABASES = ['STRINGclusters',
 
 rule all:
     input:
+        "data/results/filtering_report.txt",
+        "data/results/deduplicated_user_submission_counts_by_taxId.tsv",
+
         "data/results/cameraPR/aggregation/aggregated.txt",
         "data/results/cameraPR/aggregation_downsampled_PubMed/aggregated.txt",
         "data/results/cameraPR_nolimits/aggregation/aggregated.txt",

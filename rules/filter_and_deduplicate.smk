@@ -12,7 +12,6 @@ def collect_filtered_deduplicated_inputs(wildcards):
 
     DATAIDS = []
     TAXIDS = []
-    #for output_deduplicate in dedup_files:
     for _taxId in unique_TAXIDS:
         output_deduplicate = f"data/interim/deduplicated_dataIds/{_taxId}.tsv"
         with open(output_deduplicate, 'r') as f:
