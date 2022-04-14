@@ -8,8 +8,6 @@ import sys
 
 def add_species_groups(df, n_grouped_species = 8):
     
-    #import pdb; pdb.set_trace()
-    
     other_group_name = "rarely requested\n organisms"
     
     assert(all([col in df.columns for col in ["dataId", "species", "taxId"]]))
@@ -22,8 +20,10 @@ def add_species_groups(df, n_grouped_species = 8):
     ## Count how many dataIds per species we have
     species_counts = dataAndSpecies.groupby(['species', 'taxId']).dataId.count().sort_values(ascending = False)
 
+    #import pdb; pdb.set_trace()
+    
     ## Select the most frequent n species to be species groups
-    species_group_long_names = species_counts.head(n_grouped_species).reset_index(level = 0).drop(columns = 'dataId').squeeze()
+    species_group_long_names = species_counts.head(n_grouped_species).reset_index(level = 0).species#.drop(columns = 'dataId').species
 
     
     ### Part 2: Create the groups from the most common species
@@ -83,7 +83,6 @@ def generate_additional_file_formats(filename, formats = ['pdf', 'png']):
 # human_histogram_file = "figures/input_analysis/histogram_human_user_inputs_per_protein.svg"
 
 
-## Need to test if this works via the snakemake pipeline
 
 assert(len(sys.argv) == 9)
 script_name = sys.argv[0] 
@@ -215,6 +214,7 @@ for f in output_files:
 
 other_input_sizes = input_sizes_df.loc[input_sizes_df.species_group == "rarely requested\n organisms", :]
 
+
 with talk:
     with whitegrid:
         fig, axs = plt.subplots(1, 2, sharey=True, figsize = (14,14))
@@ -222,18 +222,20 @@ with talk:
         fig.subplots_adjust(wspace=0)
 
         order = other_input_sizes.species.value_counts().index
-        # Plot each graph, and manually set the y tick values
-        sns.countplot(data = other_input_sizes, y = "species", ax = axs[0], order = order)
+        
+        # Plot only if there is data for rarely requested organisms
+        if len(other_input_sizes) > 0:
+            sns.countplot(data = other_input_sizes, y = "species", ax = axs[0], order = order)
+            sns.boxplot(  data = other_input_sizes, y = 'species', ax = axs[1], order = order,
+                          x = 'input_size_fraction', orient = 'h',  );
+            
         axs[0].set_ylabel("");
         axs[0].set_xlabel("# user queries");
-
-        sns.boxplot(data = other_input_sizes, y = 'species', x = 'input_size_fraction', 
-                    orient = 'h', ax = axs[1], order = order);
         axs[1].set_ylabel("");
         axs[1].set_xlabel("query sizes / genome sizes")
 
 
-fig.savefig(input_other_plot_file, metadata = fig_metadata, bbox_inches = 'tight', dpi = 300)
+    fig.savefig(input_other_plot_file, metadata = fig_metadata, bbox_inches = 'tight', dpi = 300)
 
 
 

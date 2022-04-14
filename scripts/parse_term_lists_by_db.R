@@ -141,6 +141,7 @@ sink(log_fh, type = "message")
 
 ## read other input parameters
 members_file <- snakemake@input[["members_file"]]
+flag_file <- snakemake@input[["flag_file"]]
 nrows <- -1L # i.e. read all
 taxid <- snakemake@wildcards[["taxId"]]
 out_dir <- snakemake@params[["output_dir"]] #"data/interim/annotation_terms"

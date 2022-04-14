@@ -5,33 +5,7 @@
 # import glob
 
 
-def collect_filtered_deduplicated_inputs(wildcards):
 
-    ## collecting the taxIds of the species_matrices
-    unique_TAXIDS, = glob_wildcards(os.path.join(checkpoints.separate_inputs_by_species.get().output[0], "{taxId}.tsv"))
-
-    DATAIDS = []
-    TAXIDS = []
-    for _taxId in unique_TAXIDS:
-        output_deduplicate = f"data/interim/deduplicated_dataIds/{_taxId}.tsv"
-        with open(output_deduplicate, 'r') as f:
-            lines = f.readlines()
-        DATAIDS += [l.strip() for l in lines]
-        TAXIDS += [_taxId] * len(lines)
-
-    checkpoint_output = checkpoints.apply_deduplication.get().output[1]
-    result_files = expand(os.path.join(checkpoint_output,"{dataId}.{taxId}.input.tsv"),
-                          zip, 
-                          dataId = DATAIDS,
-                          taxId = TAXIDS)
-    return result_files
-
-
-rule all_filtering:
-    input:
-        #"data/interim/filtered_deduplicated_user_inputs.tsv"
-        #"data/interim/filtered_deduplicated_user_input_files.tsv",
-        collect_filtered_deduplicated_inputs
 
 rule filter_inputs:
     input:
@@ -64,7 +38,8 @@ checkpoint separate_inputs_by_species:
 
 
 rule deduplicate_similar_inputs:
-    input: 
+    input:
+        species_matrix_dir = "data/interim/species_matrices",
         species_matrix_file = "data/interim/species_matrices/{taxId}.tsv"
     params:
         metric_matrix_dir = lambda wildcards, output: os.path.dirname(output[1]),
@@ -86,11 +61,11 @@ rule deduplicate_similar_inputs:
 
 
 
+
 def expand_deduplicated_dataId_files(wildcards):
 
-    checkpoint_output = checkpoints.separate_inputs_by_species.get().output[0]
-    #print(checkpoint_output)
-    TAXIDS = glob_wildcards(os.path.join(checkpoint_output, "{taxId}.tsv")).taxId
+    species_matrix_dir = checkpoints.separate_inputs_by_species.get().output[0]
+    TAXIDS = glob_wildcards(os.path.join(species_matrix_dir, "{taxId}.tsv")).taxId
     #print(TAXIDS)
     dedup_dataId_files = expand("data/interim/deduplicated_dataIds/{taxId}.tsv", taxId = TAXIDS)
     return dedup_dataId_files
@@ -101,13 +76,44 @@ checkpoint apply_deduplication:
         deduplicate_dataId_files =  expand_deduplicated_dataId_files
     output:
         table_out_file = "data/interim/filtered_deduplicated_user_inputs.tsv",
-        out_dir = directory("data/interim/filtered_deduplicated_user_inputs")
+        out_dir = directory("data/interim/filtered_deduplicated_user_inputs"),
+        #out_files = "data/interim/filtered_deduplicated_user_inputs/{dataId}.{taxId}.input.tsv"
     conda:
         "../envs/py38_sklearn.yml"
     log:
         "logs/deduplication/filter_deduplicated.log"
     script:
         "../scripts/filter_deduplicated.py"
+
+
+# def collect_filtered_deduplicated_inputs(wildcards):
+# 
+#     ## collecting the taxIds of the species_matrices
+#     unique_TAXIDS, = glob_wildcards(os.path.join(checkpoints.separate_inputs_by_species.get().output[0], "{taxId}.tsv"))
+# 
+#     DATAIDS = []
+#     TAXIDS = []
+#     for _taxId in unique_TAXIDS:
+#         output_deduplicate = f"data/interim/deduplicated_dataIds/{_taxId}.tsv"
+#         with open(output_deduplicate, 'r') as f:
+#             lines = f.readlines()
+#         DATAIDS += [l.strip() for l in lines]
+#         TAXIDS += [_taxId] * len(lines)
+# 
+#     checkpoint_output = checkpoints.apply_deduplication.get().output[1]
+#     result_files = expand(os.path.join(checkpoint_output,"{dataId}.{taxId}.input.tsv"),
+#                           zip, 
+#                           dataId = DATAIDS,
+#                           taxId = TAXIDS)
+#     return result_files
+# 
+# 
+# rule all_filtering:
+#     input:
+#         #"data/interim/filtered_deduplicated_user_inputs.tsv"
+#         #"data/interim/filtered_deduplicated_user_input_files.tsv",
+#         collect_filtered_deduplicated_inputs
+
 
 
 rule report_filtered_and_deduplicated_count:

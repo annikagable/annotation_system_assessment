@@ -23,7 +23,7 @@ rule parse_term_lists:
     output:
         expand("data/interim/annotation_terms/{taxId}.term_list.{db}.rds", db = DATABASES, allow_missing = True)
     params:
-        output_dir = lambda wildcards, output: output[0][:29]
+        output_dir = lambda wildcards, output: os.path.dirname(output[0])
     log:
         log_file = "logs/parse_term_lists/{taxId}.log"
     conda:
@@ -34,9 +34,9 @@ rule parse_term_lists:
 
 rule run_cameraPR:
     input:
-        dedup_id_file = "data/interim/deduplicated_dataIds/{taxId}.tsv",
         infile = "data/interim/filtered_deduplicated_user_inputs/{dataId}.{taxId}.input.tsv", 
-        database_file = "data/interim/annotation_terms/{taxId}.term_list.{db}.rds"
+        database_file = "data/interim/annotation_terms/{taxId}.term_list.{db}.rds",
+        aggregated_infile = "data/interim/filtered_deduplicated_user_inputs.tsv" # need to provide just to properly connect dag
     output:
         output_file = "data/results/cameraPR/enrichment/{dataId}.{taxId}.{db}.tsv"
     params:
@@ -52,7 +52,7 @@ rule run_cameraPR:
 
 
 # One could potentially do the effect size calculation only once per dataId, i.e. for 
-# all databases at the same time. This would be more efficient and faster, but also make
+# all databases at the same time. This would spawn less jobs, but also make
 # the input/output handling more complicated. 
 # The expand functionality could be used to make a list of input files:
 # expand("{dataset}/a.txt", dataset=DATASETS)
@@ -114,7 +114,7 @@ rule write_cameraPR_termDf:
         alpha = 0.05,
         n_grouped_species = 8,
         enrichment_method = "cameraPR",
-        output_dir = "data/results/cameraPR/aggregation"
+        output_dir = lambda wildcards, input: os.path.dirname(input[0])
     log:
         "logs/write_cameraPR_termDf.log"
     conda:

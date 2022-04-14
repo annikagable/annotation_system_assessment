@@ -52,4 +52,4 @@ rule plot_database_novelty:
     conda:
         "../envs/py38_sklearn.yml"
     shell:
-        "python scripts/plot_non_redundant_terms.py {input} {output} &> {log}"
+        "python scripts/plot_database_novelty.py {input} {output} &> {log}"

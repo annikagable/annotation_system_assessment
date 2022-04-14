@@ -11,20 +11,21 @@ sink(log_fh, type = "message")
 ## concrete example, for debugging
 ## N1nQ0x555LUz.243159.KEGG
 # infile <- "data/interim/filtered_deduplicated_user_inputs/N1nQ0x555LUz.243159.input.tsv"
-# dedup_id_file <- "data/interim/deduplicated_dataIds/243159.tsv"
+## dedup_id_file <- "data/interim/deduplicated_dataIds/243159.tsv"
 # database_file <- "data/interim/annotation_terms/243159.term_list.KEGG.rds"
 # output_file   <- "data/results/cameraPR/enrichment/N1nQ0x555LUz.243159.KEGG.tsv"
 
 #
 # infile <- "data/interim/filtered_deduplicated_user_inputs/4sQkh9tb9a1E.9606.input.tsv"
-# dedup_id_file <- "data/interim/deduplicated_dataIds/9606.tsv"
+## dedup_id_file <- "data/interim/deduplicated_dataIds/9606.tsv"
 # database_file <- "data/interim/annotation_terms/9606.term_list.GO_BP.rds"
 
 ## input & output files
 infile <- snakemake@input[["infile"]]
-dedup_id_file <- snakemake@input[["dedup_id_file"]]
 database_file <- snakemake@input[["database_file"]]
 output_file   <- snakemake@output[["output_file"]]
+# this file is not a necessary input, it is just here to produce a correctly connected dag
+aggregated_infile <- snakemake@input[["aggregated_infile"]] 
 
 ## set minimum and maximum overlap parameters
 # MIN_OVERLAP <- 3
