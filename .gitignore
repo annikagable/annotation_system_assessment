@@ -6,4 +6,8 @@ __pycache__/
 *.swp
 *.swo
 *.log
-
+*.svg
+*.png
+*.pdf
+*.tsv
+*.txt
