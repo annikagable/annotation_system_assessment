@@ -9,7 +9,7 @@ data_dir="$1"
 sampling_factor="$2"
 out_dir="$3"
 
-
+mkdir -p "$out_dir"
 
 for f in "$data_dir"/*; do
     out_f="$out_dir"/$(basename "$f")

@@ -38,12 +38,12 @@ rule run_cameraPR:
         database_file = "data/interim/annotation_terms/{taxId}.term_list.{db}.rds",
         aggregated_infile = "data/interim/filtered_deduplicated_user_inputs.tsv" # need to provide just to properly connect dag
     output:
-        output_file = "data/results/cameraPR/enrichment/{dataId}.{taxId}.{db}.tsv"
+        output_file = "data/results/cameraPR/overlap_min{_min}.max{_max}/enrichment/{dataId}.{taxId}.{db}.tsv"
     params:
-        min_overlap = 3,
-        max_overlap = 200
+        min_overlap = "{_min}",#3
+        max_overlap = "{_max}"#200
     log:
-        log_file = "logs/run_cameraPR/{dataId}.{taxId}.{db}.log"
+        log_file = "logs/run_cameraPR/overlap_min{_min}.max{_max}/{dataId}.{taxId}.{db}.log"
     conda:
         "../envs/r363.yml"
     script:
@@ -60,12 +60,12 @@ rule run_cameraPR:
         
 rule get_effect_size:
     input:
-        enrichment_file = "data/results/cameraPR/enrichment/{dataId}.{taxId}.{db}.tsv",
+        enrichment_file = "data/results/cameraPR/overlap_min{min}.max{max}/enrichment/{dataId}.{taxId}.{db}.tsv",
         user_input_file = "data/interim/filtered_deduplicated_user_inputs/{dataId}.{taxId}.input.tsv"
     output:
         effect_file = "data/results/cameraPR/effect_size/{dataId}.{taxId}.{db}.tsv"
     log:
-        log_file = "logs/get_effect_size/{dataId}.{taxId}.{db}.log"
+        log_file = "logs/get_effect_size/{overlap_min{_min}.max{_max}/dataId}.{taxId}.{db}.log"
     conda:
         "../envs/py38_sklearn.yml"
     shell:
@@ -77,11 +77,14 @@ def collect_cameraPR_output(wildcards):
 
     filtered_dedup_dir = checkpoints.apply_deduplication.get().output[1]
     DATAIDS, TAXIDS = glob_wildcards(os.path.join(filtered_dedup_dir,"{dataId}.{taxId}.input.tsv"))
+    MINS, MAXS = zip(*OVERLAP_THRESHOLDS) 
 
     result_files =  expand(
-                expand("data/results/cameraPR/effect_size/{dataId}.{taxId}.{db}.tsv",
-                        zip, dataId = DATAIDS, taxId = TAXIDS, allow_missing = True), 
-                db = DATABASES)
+                        expand(
+                            expand("data/results/cameraPR/overlap_min{_min}.max{_max}/effect_size/{dataId}.{taxId}.{db}.tsv",
+                            zip, dataId = DATAIDS, taxId = TAXIDS, allow_missing = True),
+                        zip, _min = MINS, _max = MAXS, allow_missing = True),
+                    db = DATABASES)
                 
     #result_files = [f for f in result_files if '83332' in f] + [f for f in result_files if 'zScfigOSQ47O' in f]
     #result_files = [f for f in result_files if 'PubMed' not in f]
@@ -93,9 +96,9 @@ rule collect_cameraPR:
     input:
         collect_cameraPR_output
     output:
-        "data/results/cameraPR/aggregation/aggregated.txt"
+        "data/results/cameraPR/overlap_min{_min}.max{_max}/aggregation/aggregated.txt"
     log:
-        "logs/collect_cameraPR.log"
+        "logs/collect_cameraPR/overlap_min{_min}.max{_max}.log"
     run:
         result_files_string = '\n'.join(input)+'\n'
         with open (output[0], 'w') as f:
@@ -105,18 +108,18 @@ rule collect_cameraPR:
 
 rule write_cameraPR_termDf:
     input:
-        enrichment_files_file = "data/results/cameraPR/aggregation/aggregated.txt",
+        enrichment_files_file = "data/results/cameraPR/overlap_min{_min}.max{_max}/aggregation/aggregated.txt",
         species_taxIds_file = "data/raw/species.v11.0.txt"
     output:
-        "data/results/cameraPR/aggregation/sigTermDf.tsv",
-        "data/results/cameraPR/aggregation/dataId_isSig.tsv"
+        "data/results/cameraPR/overlap_min{_min}.max{_max}/aggregation/sigTermDf.tsv",
+        "data/results/cameraPR/overlap_min{_min}.max{_max}/aggregation/dataId_isSig.tsv"
     params:
         alpha = 0.05,
         n_grouped_species = 8,
         enrichment_method = "cameraPR",
         output_dir = lambda wildcards, input: os.path.dirname(input[0])
     log:
-        "logs/write_cameraPR_termDf.log"
+        "logs/write_cameraPR_termDf/overlap_min{_min}.max{_max}.log"
     conda:
         "../envs/py38_sklearn.yml"
     shell:

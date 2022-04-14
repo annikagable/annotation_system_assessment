@@ -60,28 +60,40 @@ if ((term_list == '') || (length(term_list) == 0)){
     gene_value_vector <- setNames(gene_value$value, gene_value$shorthand)
     
 
-    ## filter the term list to remove terms that have a too large or too small 
-    ## overlap with the user input data, analogue to what global enrichment does.
-    ## Only gene sets that have any overlap within the size constraints get included in
-    ## enrichment analysis. This list does not change the set size yet though.
-
+    ## Filter the term list to remove terms that have a too large or too small 
+    ## overlap with the user input data, analogous to what STRING's global enrichment does.
+    ## Only gene sets that have any overlap within the size constraints (MIN_OVERLAP 
+    ## and MAX_OVERLAP) get included in enrichment analysis. This filtering does not change 
+    ## the set size yet though because this is done by limma's enrichment function.
 
     print("Filtering gene sets by input.")
-    filter_terms <- function(term_members, input_proteins = names(gene_value_vector), mi=MIN_OVERLAP, ma= MAX_OVERLAP){
+    print(paste0("Keep gene sets that overlap with input by minimum of", 
+                  as.character(MIN_OVERLAP), "and", 
+                  as.character(MAX_OVERLAP), "."))
 
+    if ((MIN_OVERLAP == 0) && (MAX_OVERLAP == Inf)){
+        # save time by skipping filtering
         term_members_filtered <- term_members
-        intersection <- intersect(term_members, input_proteins)
-        overlap <- length(intersection)
-        if(overlap < mi || overlap > ma){
-          term_members_filtered <- NULL
+    }else{
+
+        filter_terms <- function(term_members, 
+                                 input_proteins = names(gene_value_vector), 
+                                 mi = MIN_OVERLAP, 
+                                 ma = MAX_OVERLAP){
+    
+            term_members_filtered <- term_members
+            intersection <- intersect(term_members, input_proteins)
+            overlap <- length(intersection)
+            if(overlap < mi || overlap > ma){
+              term_members_filtered <- NULL
+            }
+            return(term_members_filtered)
         }
-        return(term_members_filtered)
+        
+        term_list_filtered <- lapply(term_list, filter_terms)
+        # remove the NULL elements (these list elements should not be counted in multiple testing)
+        term_list_filtered <- term_list_filtered[!sapply(term_list_filtered, is.null)]
     }
-
-
-    term_list_filtered <- lapply(term_list, filter_terms)
-    # remove the NULL elements (these list elements should not be counted in multiple testing)
-    term_list_filtered <- term_list_filtered[!sapply(term_list_filtered, is.null)]
   
     print("Running cameraPR.")
     ## get a named list of indices that correspond to the shorthands that are actually present in the given input

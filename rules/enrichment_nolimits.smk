@@ -6,12 +6,15 @@ rule run_cameraPR_nolimits:
         database_file = "data/interim/annotation_terms/{taxId}.term_list.{db}.rds"
     output:
         output_file = "data/results/cameraPR_nolimits/enrichment/{dataId}.{taxId}.{db}.tsv"
+    params:
+        min_overlap = 0,
+        max_overlap = "Inf"
     log:
         log_file = "logs/run_cameraPR_nolimits/{dataId}.{taxId}.{db}.log"
     conda:
         "../envs/r363.yml"
     script:
-        "../scripts/run_cameraPR_nolimits.R"
+        "../scripts/run_cameraPR.R"
 
         
 rule get_effect_size_nolimits:

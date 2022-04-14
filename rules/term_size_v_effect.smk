@@ -2,11 +2,11 @@ rule downsample_PubMed:
     input:
         "data/results/cameraPR/aggregation/aggregated.txt"
     output:
-        expand("data/results/cameraPR/effect_size_downsampled_PubMed/{fname}", fname = glob_wildcards("data/results/cameraPR/effect_size/{fname}").fname)
+        expand("data/results/cameraPR/downsampled_PubMed/effect_size/{fname}", fname = glob_wildcards("data/results/cameraPR/effect_size/{fname}").fname)
     params:
         input_dir = "data/results/cameraPR/effect_size",
         sampling_factor = 100,
-        output_dir = "data/results/cameraPR/effect_size_downsampled_PubMed"
+        output_dir = "data/results/cameraPR/downsampled_PubMed/effect_size"
     log:
         "logs/downsample_PubMed.log"
     shell:
@@ -16,10 +16,10 @@ rule downsample_PubMed:
         
 rule collect_cameraPR_downsampled_PubMed:
     input:
-        expand("data/results/cameraPR/effect_size_downsampled_PubMed/{fname}",
+        expand("data/results/cameraPR/downsampled_PubMed/effect_size/{fname}",
                fname = glob_wildcards("data/results/cameraPR/effect_size/{fname}").fname)
     output:
-        "data/results/cameraPR/aggregation_downsampled_PubMed/aggregated.txt"
+        "data/results/cameraPR/downsampled_PubMed/aggregation/aggregated.txt"
     log:
         "logs/collect_cameraPR_downsampled_PubMed.log"
     run:
@@ -31,15 +31,15 @@ rule collect_cameraPR_downsampled_PubMed:
             
 rule write_cameraPR_termDf_downsampled_PubMed:
     input:
-        enrichment_files_file = "data/results/cameraPR/aggregation_downsampled_PubMed/aggregated.txt",
+        enrichment_files_file = "data/results/cameraPR/downsampled_PubMed/aggregation/aggregated.txt",
         species_taxIds_file = "data/raw/species.v11.0.txt"
     output:
-        "data/results/cameraPR/aggregation_downsampled_PubMed/sigTermDf.tsv",
-        "data/results/cameraPR/aggregation_downsampled_PubMed/dataId_isSig.tsv"
+        "data/results/cameraPR/downsampled_PubMed/aggregation/sigTermDf.tsv",
+        "data/results/cameraPR/downsampled_PubMed/aggregation/dataId_isSig.tsv"
     params:
         alpha = 1,
         n_grouped_species = 8,
-        output_dir = "data/results/cameraPR/aggregation_downsampled_PubMed",
+        output_dir = "data/results/cameraPR/downsampled_PubMed/aggregation",
         enrichment_method = "cameraPR"
     log:
         "logs/write_cameraPR_termDf_downsampled_PubMed.log"
@@ -53,7 +53,7 @@ rule write_cameraPR_termDf_downsampled_PubMed:
 rule plot_term_size_v_effect:
     input:
         "data/raw/global_enrichment_annotations/9606.terms_members.tsv",
-        "data/results/cameraPR/aggregation_downsampled_PubMed/sigTermDf.tsv"
+        "data/results/cameraPR/downsampled_PubMed/aggregation/sigTermDf.tsv"
     output:
         "figures/cameraPR/9606.term_size_v_pval.svg",
         "figures/cameraPR/9606.term_size_v_pval_by_database.svg",

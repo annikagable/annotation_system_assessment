@@ -3,6 +3,7 @@ import glob
 
 #configfile: "config.yaml"
 
+OVERLAP_THRESHOLDS = [(3,200), (0, "Inf")]
 DATABASES = ['STRINGclusters',
              #'Reactome',
              #'PubMed',
