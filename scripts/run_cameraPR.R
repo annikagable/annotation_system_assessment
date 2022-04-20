@@ -43,6 +43,21 @@ empty_result <-  data.frame(list("term_shorthand" = vector(mode = "character"),
                                  ))
 
 
+filter_terms <- function(term_members, 
+                         input_proteins = names(gene_value_vector), 
+                         mi = MIN_OVERLAP, 
+                         ma = MAX_OVERLAP){
+
+    term_members_filtered <- term_members
+    intersection <- intersect(term_members, input_proteins)
+    overlap <- length(intersection)
+    if(overlap < mi || overlap > ma){
+      term_members_filtered <- NULL
+    }
+    return(term_members_filtered)
+}
+
+
 ## read in RDS object which is a named list of shorthands, names are pathways
 print("Reading gene sets.")
 term_list <- readRDS(database_file)
@@ -67,30 +82,21 @@ if ((term_list == '') || (length(term_list) == 0)){
     ## the set size yet though because this is done by limma's enrichment function.
 
     print("Filtering gene sets by input.")
-    print(paste0("Keep gene sets that overlap with input by minimum of", 
+    print(paste("Keep gene sets that overlap with input by minimum of", 
                   as.character(MIN_OVERLAP), "and", 
                   as.character(MAX_OVERLAP), "."))
 
     if ((MIN_OVERLAP == 0) && (MAX_OVERLAP == Inf)){
+       
         # save time by skipping filtering
-        term_members_filtered <- term_members
+        term_list_filtered <- term_list
+
     }else{
 
-        filter_terms <- function(term_members, 
-                                 input_proteins = names(gene_value_vector), 
-                                 mi = MIN_OVERLAP, 
-                                 ma = MAX_OVERLAP){
-    
-            term_members_filtered <- term_members
-            intersection <- intersect(term_members, input_proteins)
-            overlap <- length(intersection)
-            if(overlap < mi || overlap > ma){
-              term_members_filtered <- NULL
-            }
-            return(term_members_filtered)
-        }
-        
-        term_list_filtered <- lapply(term_list, filter_terms)
+        term_list_filtered <- lapply(term_list, filter_terms,
+                                     input_proteins = names(gene_value_vector), 
+                                     mi = MIN_OVERLAP, 
+                                     ma = MAX_OVERLAP)
         # remove the NULL elements (these list elements should not be counted in multiple testing)
         term_list_filtered <- term_list_filtered[!sapply(term_list_filtered, is.null)]
     }
