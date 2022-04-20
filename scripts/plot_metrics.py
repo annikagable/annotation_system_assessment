@@ -1,4 +1,4 @@
-## This script plots the three basic enrichment result metrics. Can be cameraPR or global enrichment results.
+## This script plots the two basic enrichment result metrics.
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
@@ -10,8 +10,9 @@ import utils
 # sigTerm_file = "data/results/cameraPR/aggregation/sigTermDf.tsv"
 # dataId_isSig_file = "data/results/cameraPR/aggregation/dataId_isSig.tsv"
 # script_name = "plot_metrics.py"
+# species_subset = "reduced"
 
-script_name, sigTerm_file, dataId_isSig_file, out_dir = sys.argv
+script_name, sigTerm_file, dataId_isSig_file, out_dir, species_subset = sys.argv
 
 python_version = 'Python ' + sys.version.split()[0]
 fig_metadata = {'Creator': python_version, 'Author': 'Annika Gable', 'Title': script_name}
@@ -23,18 +24,31 @@ talk = sns.plotting_context('talk')
 poster = sns.plotting_context('poster')
 
 dbColors = utils.dbColors
-
-## -----------------------------------------------------      
-## Read and format enrichment data 
-
+drop_species = ["D.rerio", "R.norvegicus"]
 
 # species_order = ["H.sapiens", "M.musculus", "R.norvegicus",
 #                  "D.rerio", "D.melanogaster", "A.thaliana", 
 #                  "S.cerevisiae", "E.coli", "other"]
 
 
+## -----------------------------------------------------      
+## Read and format enrichment data 
+
+
 sigTermNamedGroupDf = pd.read_table(sigTerm_file)
 dataId_isSig = pd.read_table(dataId_isSig_file)
+
+other_organisms = "other"
+
+if species_subset == "reduced":
+    ## Remove some species
+    sigTermNamedGroupDf = sigTermNamedGroupDf.loc[~sigTermNamedGroupDf.species_group.isin(drop_species),:]
+    dataId_isSig = dataId_isSig.loc[~dataId_isSig.species_group.isin(drop_species),:]
+
+    ## Rename "other" category
+    other_organisms = 'rarely requested\norganisms'
+    sigTermNamedGroupDf.loc[sigTermNamedGroupDf.species_group == 'other', 'species_group'] = other_organisms
+    dataId_isSig.loc[dataId_isSig.species_group == 'other', 'species_group'] = other_organisms
 
 ## Get the total number of inputs (whether they got enrichment or not, per species_group)
 input_counts = dataId_isSig.groupby("species_group").dataId.unique().apply(len)
@@ -42,7 +56,7 @@ input_counts.name = "all_input_counts"
 
 # Re-shuffle input counts so that the "other" species are at the end
 input_counts = input_counts.sort_values(ascending = False)
-cond = (input_counts.index == "other")
+cond = (input_counts.index == other_organisms)
 species = input_counts.loc[~cond]
 other = input_counts.loc[cond]
 input_counts = species.append(other)

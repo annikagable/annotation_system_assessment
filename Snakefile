@@ -2,7 +2,7 @@ import os
 import glob
 
 #configfile: "config.yaml"
-
+SPECIES_SUBSETS = ["all", "reduced"]
 OVERLAP_THRESHOLDS = [(3,200), (0, "Inf")]
 DATABASES = ['STRINGclusters',
              #'Reactome',
@@ -21,9 +21,10 @@ DATABASES = ['STRINGclusters',
 
 def expand_plots_by_overlap_thresholds(wildcards):
     MINS, MAXS = zip(*OVERLAP_THRESHOLDS)
-    facetGrid_plots = expand("figures/cameraPR/overlap_{_min}-{_max}/at_least_one_significant_facetGrid.svg", zip, _min = MINS, _max = MAXS)
-    sig_terms_plots = expand("figures/cameraPR/overlap_{_min}-{_max}/nr_sig_terms_per_user_input.svg",        zip, _min = MINS, _max = MAXS)
-    result_files = facetGrid_plots + sig_terms_plots
+    #plots = 
+    facetGrid_plots = expand(expand("figures/cameraPR/overlap_{_min}-{_max}/{species_subset}_species/at_least_one_significant_facetGrid.svg", zip, _min = MINS, _max = MAXS,allow_missing = True),species_subset = SPECIES_SUBSETS)
+    #sig_terms_plots = expand("figures/cameraPR/overlap_{_min}-{_max}/{species_subset}/nr_sig_terms_per_user_input.svg",        zip, _min = MINS, _max = MAXS)
+    result_files = facetGrid_plots# + sig_terms_plots
     return result_files
 
 rule all:
