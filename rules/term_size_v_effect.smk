@@ -1,14 +1,14 @@
 rule downsample_PubMed:
     input:
-        "data/results/cameraPR/aggregation/aggregated.txt"
+        "data/results/cameraPR/overlap_{_min}-{_max}/aggregation/aggregated.txt"
     output:
-        expand("data/results/cameraPR/downsampled_PubMed/effect_size/{fname}", fname = glob_wildcards("data/results/cameraPR/effect_size/{fname}").fname)
+        expand("data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/effect_size/{fname}", fname = glob_wildcards("data/results/cameraPR/overlap_{_min}-{_max}/effect_size/{fname}").fname)
     params:
-        input_dir = "data/results/cameraPR/effect_size",
+        input_dir = "data/results/cameraPR/overlap_{_min}-{_max}/effect_size",
         sampling_factor = 100,
-        output_dir = "data/results/cameraPR/downsampled_PubMed/effect_size"
+        output_dir = "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/effect_size"
     log:
-        "logs/downsample_PubMed.log"
+        "logs/downsample_PubMed.overlap_{_min}-{_max}.log"
     shell:
         "scripts/downsample_PubMed_enrichments.sh {params.input_dir} {params.sampling_factor} {params.output_dir} &> {log}"
         
@@ -16,12 +16,12 @@ rule downsample_PubMed:
         
 rule collect_cameraPR_downsampled_PubMed:
     input:
-        expand("data/results/cameraPR/downsampled_PubMed/effect_size/{fname}",
-               fname = glob_wildcards("data/results/cameraPR/effect_size/{fname}").fname)
+        expand("data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/effect_size/{fname}",
+               fname = glob_wildcards("data/results/cameraPR/overlap_{_min}-{_max}/effect_size/{fname}").fname)
     output:
-        "data/results/cameraPR/downsampled_PubMed/aggregation/aggregated.txt"
+        "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/aggregated.txt"
     log:
-        "logs/collect_cameraPR_downsampled_PubMed.log"
+        "logs/collect_cameraPR_downsampled_PubMed.overlap_{_min}-{_max}.log"
     run:
         result_files_string = '\n'.join(input)+'\n'
         with open (output[0], 'w') as f:
@@ -31,18 +31,18 @@ rule collect_cameraPR_downsampled_PubMed:
             
 rule write_cameraPR_termDf_downsampled_PubMed:
     input:
-        enrichment_files_file = "data/results/cameraPR/downsampled_PubMed/aggregation/aggregated.txt",
+        enrichment_files_file = "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/aggregated.txt",
         species_taxIds_file = "data/raw/species.v11.0.txt"
     output:
-        "data/results/cameraPR/downsampled_PubMed/aggregation/sigTermDf.tsv",
-        "data/results/cameraPR/downsampled_PubMed/aggregation/dataId_isSig.tsv"
+        "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/sigTermDf.tsv",
+        "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/dataId_isSig.tsv"
     params:
         alpha = 1,
         n_grouped_species = 8,
-        output_dir = "data/results/cameraPR/downsampled_PubMed/aggregation",
+        output_dir = "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation",
         enrichment_method = "cameraPR"
     log:
-        "logs/write_cameraPR_termDf_downsampled_PubMed.log"
+        "logs/write_cameraPR_termDf_downsampled_PubMed.overlap_{_min}-{_max}.log"
     conda:
         "../envs/py38_sklearn.yml"
     shell:
@@ -53,19 +53,19 @@ rule write_cameraPR_termDf_downsampled_PubMed:
 rule plot_term_size_v_effect:
     input:
         "data/raw/global_enrichment_annotations/9606.terms_members.tsv",
-        "data/results/cameraPR/downsampled_PubMed/aggregation/sigTermDf.tsv"
+        "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/sigTermDf.tsv"
     output:
-        "figures/cameraPR/9606.term_size_v_pval.svg",
-        "figures/cameraPR/9606.term_size_v_pval_by_database.svg",
-        "figures/cameraPR/9606.term_size_v_effect_size.svg",
-        "figures/cameraPR/9606.term_size_v_effect_size_all_terms.svg",
-        "figures/cameraPR/9606.term_size_v_effect_size_by_database.svg",
-        "figures/cameraPR/9606.term_size_v_effect_size_FDR.svg",
-        "figures/cameraPR/9606.term_size_v_effect_size_FDR_by_database.svg",
-        "figures/cameraPR/9606.sig_v_insig_term_size.svg",
-        "data/results/cameraPR/term_size_v_effect_correlations.tsv" 
+        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_pval.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_pval_by_database.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_effect_size.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_effect_size_all_terms.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_effect_size_by_database.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_effect_size_FDR.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_effect_size_FDR_by_database.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/9606.sig_v_insig_term_size.svg",
+        "data/results/cameraPR/overlap_{_min}-{_max}/term_size_v_effect_correlations.tsv" 
     log:
-        "logs/plot_term_size_v_effect.log"
+        "logs/plot_term_size_v_effect.overlap_{_min}-{_max}.log"
     conda:
         "../envs/py38_plotting.yml"
     shell:
