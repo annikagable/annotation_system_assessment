@@ -105,7 +105,7 @@ def read_one_user_output_GE(f, alpha):
 def read_all_user_outputs(output_files_file,
                           enrichment_method, 
                           db_order,
-                          alpha = 0.05):
+                          alpha):
     
     
     with open(output_files_file, 'r') as files_f:
@@ -264,8 +264,8 @@ dataIdNamedGroupDf = add_species_groups(df = dataIdNamedDf, n_grouped_species = 
 overlap_gene_column = termNamedGroupDf.pop('overlap_genes')
 termNamedGroupDf = pd.concat([termNamedGroupDf, overlap_gene_column], axis = 1)
 
-sigTermDf_file    = os.path.join(out_dir, "sigTermDf.tsv")
-dataId_isSig_file = os.path.join(out_dir, "dataId_isSig.tsv")
+sigTermDf_file    = os.path.join(out_dir, "sigTermDf_alpha"+str(alpha)+".tsv")
+dataId_isSig_file = os.path.join(out_dir, "dataId_isSig_alpha"+str(alpha)+".tsv")
 
 termNamedGroupDf.to_csv(sigTermDf_file, sep = '\t', index = False)
 dataIdNamedGroupDf.to_csv(dataId_isSig_file, sep = '\t', index = False)

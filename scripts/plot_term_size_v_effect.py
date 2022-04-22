@@ -13,7 +13,7 @@
 
 ## Usage: python scripts/plot_term_size_v_effect.py members_file termDf_file pval_plot_file  pval_plot_by_database_file effect_plot_file effect_plot_all_terms_file effect_plot_by_database_file sig_vs_insig_term_sizes_plot_file correlations_file
 
-## Example: python scripts/plot_term_size_v_effect.py data/raw/global_enrichment_annotations/9606.terms_members.tsv data/results/cameraPR/aggregation_downsampled_PubMed/sigTermDf.tsv figures/cameraPR/9606.term_size_v_pval.svg  figures/cameraPR/9606.term_size_v_pval_by_database.svg figures/cameraPR/9606.term_size_v_effect_size.svg figures/cameraPR/9606.term_size_v_effect_size_all_terms.svg figures/cameraPR/9606.term_size_v_effect_size_by_database.svg figures/cameraPR/9606.sig_v_insig_term_size.svg data/results/term_size_v_effect_correlations.tsv
+## Example: python scripts/plot_term_size_v_effect.py data/raw/global_enrichment_annotations/9606.terms_members.tsv data/results/cameraPR/downsampled_PubMed/aggregation/sigTermDf.tsv figures/cameraPR/9606.term_size_v_pval.svg  figures/cameraPR/9606.term_size_v_pval_by_database.svg figures/cameraPR/9606.term_size_v_effect_size.svg figures/cameraPR/9606.term_size_v_effect_size_all_terms.svg figures/cameraPR/9606.term_size_v_effect_size_by_database.svg figures/cameraPR/9606.sig_v_insig_term_size.svg data/results/term_size_v_effect_correlations.tsv
 
 
 import matplotlib.pyplot as plt
@@ -24,6 +24,7 @@ import os
 import seaborn as sns
 import sys
 import numpy as np
+import warnings
 import scipy.stats
 import utils
 
@@ -83,21 +84,21 @@ def plot_trend(data, x_col, y_col, n_bins, **kws):
     
 if __name__ == "__main__":
     
-    # members_file = "data/raw/global_enrichment_annotations/9606.terms_members.tsv"
-    # termDf_file  = "data/results/cameraPR_nolimits/aggregation_downsampled_PubMed/sigTermDf.tsv"
+#     members_file = "data/raw/global_enrichment_annotations/9606.terms_members.tsv"
+#     termDf_file  = "data/results/cameraPR/overlap_3-200/downsampled_PubMed/aggregation/sigTermDf_alpha1.tsv"
 
-    # pval_plot_file = "figures/cameraPR_nolimits/9606.term_size_v_pval.svg"
-    # pval_plot_by_database_file = "figures/cameraPR_nolimits/9606.term_size_v_pval_by_database.svg"
+#     pval_plot_file = "figures/cameraPR/overlap_3-200/9606.term_size_v_pval.svg"
+#     pval_plot_by_database_file = "figures/cameraPR/overlap_3-200/9606.term_size_v_pval_by_database.svg"
 
-    # effect_plot_file = "figures/cameraPR_nolimits/9606.term_size_v_effect_size.svg"
-    # effect_plot_all_terms_file = "figures/cameraPR_nolimits/9606.term_size_v_effect_size_all_terms.svg"
-    # effect_plot_by_database_file = "figures/cameraPR_nolimits/9606.term_size_v_effect_size_by_database.svg"
+#     effect_plot_file = "figures/cameraPR/overlap_3-200/9606.term_size_v_effect_size.svg"
+#     effect_plot_all_terms_file = "figures/cameraPR/overlap_3-200/9606.term_size_v_effect_size_all_terms.svg"
+#     effect_plot_by_database_file = "figures/cameraPR/overlap_3-200/9606.term_size_v_effect_size_by_database.svg"
 
-    # effect_plot_FDR_file = "figures/cameraPR_nolimits/9606.term_size_v_effect_size_FDR.svg"
-    # effect_plot_FDR_by_database_file = "figures/cameraPR_nolimits/9606.term_size_v_effect_size_FDR_by_database.svg"
-    # sig_vs_insig_term_sizes_plot_file = "figures/cameraPR_nolimits/9606.sig_v_insig_term_size.svg"
+#     effect_plot_FDR_file = "figures/cameraPR/overlap_3-200/9606.term_size_v_effect_size_FDR.svg"
+#     effect_plot_FDR_by_database_file = "figures/cameraPR/overlap_3-200/9606.term_size_v_effect_size_FDR_by_database.svg"
+#     sig_vs_insig_term_sizes_plot_file = "figures/cameraPR/overlap_3-200/9606.sig_v_insig_term_size.svg"
 
-    # correlations_file = "data/results/cameraPR_nolimits/term_size_v_effect_correlations.tsv"
+#     correlations_file = "data/results/cameraPR/overlap_3-200/term_size_v_effect_correlations.tsv"
 
     assert(len(sys.argv) == 12)
 
@@ -108,7 +109,7 @@ if __name__ == "__main__":
     correlations_file = sys.argv
 
 
-
+    alpha = 0.05
     dbColors = utils.dbColors
     sns.set_context("notebook")
     talk = sns.plotting_context("talk")
@@ -125,28 +126,33 @@ if __name__ == "__main__":
 
     ## Add term size and other columns to the term dataframe
     termDf = termDf.merge(members, how = "inner", on = "term_shorthand")
-    termDf = termDf.assign(#isSig = (termDf.p_value < 0.05),
-                           neg_log_pval = -np.log10(termDf.p_value),
+    termDf = termDf.assign(neg_log_pval = -np.log10(termDf.p_value),
                            abs_effect_size = abs(termDf.effect_size),
                            log_term_size = np.log10(termDf.term_size),
                            log_overlap = np.log10(termDf.overlap))
 
-    sigPTermDf = termDf.loc[termDf.p_value < 0.05, : ].copy()
-    sigQTermDf = termDf.loc[termDf.q_value < 0.05, : ].copy()
+    sigPTermDf = termDf.loc[termDf.p_value < alpha, : ].copy()
+    sigQTermDf = termDf.loc[termDf.q_value < alpha, : ].copy()
 
     rank_correlations = []
+    
+    if len(termDf) == 0:
+        warnings.warn("termDf is empty")
+    elif len(sigPTermDf) == 0:
+        warnings.warn("sigPTermDf is empty")
+    elif len(sigQTermDf) == 0:
+        warnings.warn("sigQTermDf is empty")
 
 
     #####################################################
     #plot significant terms' sizes vs nonsignificant terms' sizes
     #####################################################
 
-    termDf = termDf.assign(isSigQval = termDf.q_value <= 0.05)
+    termDf = termDf.assign(isSigQval = termDf.q_value <= alpha)
 
     ## Asssess if the term size difference between significantly enriched
     ## terms and non-significantly enriched terms is significant
     # def test_difference_in_distribution(df):
-    #     alpha = 0.05
     #     x = df.loc[df.q_value <= alpha, 'log_term_size']
     #     y = df.loc[df.q_value >  alpha, 'log_term_size']
     #     U, pval = scipy.stats.mannwhitneyu(x, y)
@@ -175,9 +181,10 @@ if __name__ == "__main__":
 
     fig = plt.figure(figsize = (6,4.5))
     ax = fig.gca()
-    sns.boxplot(data =termDf, y = "database", hue= 'isSigQval', x = 'term_size', 
-                  orient = 'h', showfliers = True, notch= True, fliersize = 1,
-                  palette = ['lightgrey', 'tab:green']).set(xscale = 'log');
+    if len(termDf) > 0:
+        sns.boxplot(data =termDf, y = "database", hue= 'isSigQval', x = 'term_size', 
+                      orient = 'h', showfliers = True, notch= True, fliersize = 1,
+                      palette = ['lightgrey', 'tab:green']).set(xscale = 'log');
     plt.legend(title = "significantly\nenriched",
                fontsize= 'small', 
                title_fontsize='small', 
@@ -196,18 +203,19 @@ if __name__ == "__main__":
     ##################################################
 
     with talk:
-        alpha = 0.05
+        alpha = alpha
         plt.figure(figsize = (6,4.5));
-        plt.hexbin(data = termDf, 
-                   y = 'neg_log_pval',
-                   x = 'term_size',
-                   mincnt = 1,
-                   norm = matplotlib.colors.LogNorm(),
-                   xscale = 'log',
-                   extent = (0, 4.4, 0, 45)
-                  );
+        if len(termDf) > 0:
+            plt.hexbin(data = termDf, 
+                       y = 'neg_log_pval',
+                       x = 'term_size',
+                       mincnt = 1,
+                       norm = matplotlib.colors.LogNorm(),
+                       xscale = 'log',
+                       extent = (0, 4.4, 0, 45)
+                      );
 
-        plt.colorbar().set_label("number of terms");
+            plt.colorbar().set_label("number of terms");
         plt.xlabel("term size");
         plt.ylabel("-log10( raw p-value )");
         plt.hlines(y     = -np.log10(alpha),
@@ -224,7 +232,7 @@ if __name__ == "__main__":
     ## This also shows a peak at term size 100, but doesn't drop so much towards
     ## the end, and gets increasingly wriggly for bigger term sizes, presumably
     ## because there are just a few such terms
-    # bin_midpoints, bin_means = get_bin_means(data = termDf,#.loc[termDf.p_value < 0.05], 
+    # bin_midpoints, bin_means = get_bin_means(data = termDf,#.loc[termDf.p_value < alpha], 
     #                                          x_col = 'log_term_size', 
     #                                          y_col = 'neg_log_pval', 
     #                                          n_bins = 100)
@@ -240,22 +248,23 @@ if __name__ == "__main__":
     with talk:
         g = sns.FacetGrid(termDf, col = "database", col_wrap = 4, 
                           sharey=True, sharex = False, height=4, aspect=1);
-        g = g.map(plt.hexbin, 'term_size', 'neg_log_pval', 
-                  mincnt=1, gridsize=40, linewidths=0, 
-                  xscale = 'log',
-                  extent = (0, 4.4, 0, 50),
-                  norm = matplotlib.colors.LogNorm());
+        if len(termDf) > 0:
+            g = g.map(plt.hexbin, 'term_size', 'neg_log_pval', 
+                      mincnt=1, gridsize=40, linewidths=0, 
+                      xscale = 'log',
+                      extent = (0, 4.4, 0, 50),
+                      norm = matplotlib.colors.LogNorm());
+
+            # Nice common colorbar
+            cax = g.fig.add_axes([0.8, alpha, 0.03, 0.25]) # x0, y0, width, height
+            cb = plt.colorbar(cax=cax)
+            cb.set_label("# of terms")
+
         g.set_xlabels('term size')
         g.set_ylabels('-log10( raw p-value )')
         g.set_titles(col_template="{col_name}")
 
 
-        # Nice common colorbar
-        #     cbar_ax = g.fig.add_axes([0.8,0.05, 0.015, 0.25])
-        #     plt.colorbar(cax=cbar_ax)
-        cax = g.fig.add_axes([0.8, 0.05, 0.03, 0.25]) # x0, y0, width, height
-        cb = plt.colorbar(cax=cax)
-        cb.set_label("# of terms")
 
 
     g.fig.tight_layout()
@@ -274,19 +283,20 @@ if __name__ == "__main__":
     rho, pval = scipy.stats.spearmanr(termDf.abs_effect_size, termDf.log_term_size)
 
 
-    alpha = 0.05
+    alpha = alpha
     with talk:
         fig = plt.figure(figsize = (6,4.5));
         ax = fig.gca()
-        hb = ax.hexbin(data = termDf, 
-                   y = 'abs_effect_size',
-                   x = 'term_size',
-                   mincnt = 1,
-                   xscale = 'log',
-                   extent = (0, 4.4, 0, 1),
-                   norm = matplotlib.colors.LogNorm(),
-                  );
-        fig.colorbar(hb).set_label("number of terms");
+        if len(termDf) > 0:
+            hb = ax.hexbin(data = termDf, 
+                       y = 'abs_effect_size',
+                       x = 'term_size',
+                       mincnt = 1,
+                       xscale = 'log',
+                       extent = (0, 4.4, 0, 1),
+                       norm = matplotlib.colors.LogNorm(),
+                      );
+            fig.colorbar(hb).set_label("number of terms");
         ax.set_xlabel("term size");
         ax.set_ylabel("enrichment effect size");
 
@@ -317,18 +327,19 @@ if __name__ == "__main__":
     # R   = scipy.stats.pearsonr( sigPTermDf.abs_effect_size, sigPTermDf.log_term_size)[0]
 
     with talk:
-        alpha = 0.05
+        alpha = alpha
         fig = plt.figure(figsize = (6,4.5));
         ax = fig.gca()
-        hb = ax.hexbin(data = sigPTermDf, 
-                   y = 'abs_effect_size',
-                   x = 'term_size',
-                   mincnt = 1,
-                   xscale = 'log',
-                   extent = (0, 4.4, 0, 1),
-                   norm = matplotlib.colors.LogNorm(),
-                  );
-        fig.colorbar(hb).set_label("number of terms");
+        if len(sigPTermDf) > 0:
+            hb = ax.hexbin(data = sigPTermDf, 
+                       y = 'abs_effect_size',
+                       x = 'term_size',
+                       mincnt = 1,
+                       xscale = 'log',
+                       extent = (0, 4.4, 0, 1),
+                       norm = matplotlib.colors.LogNorm(),
+                      );
+            fig.colorbar(hb).set_label("number of terms");
         ax.set_xlabel("term size");
         ax.set_ylabel("enrichment effect size");
 
@@ -358,24 +369,26 @@ if __name__ == "__main__":
     with talk:
         g = sns.FacetGrid(sigPTermDf, col = "database", col_wrap = 4, 
                           sharey=False, sharex=False, height=4, aspect=1);
-        g = g.map(plt.hexbin, x_col, y_col, 
-                  mincnt=1, gridsize=40, linewidths=0, 
-                  xscale = 'log',
-                  extent = (0, 4.4, 0, 1),
-                  norm = matplotlib.colors.LogNorm());
+        if len(sigPTermDf) > 0:
+            g = g.map(plt.hexbin, x_col, y_col, 
+                      mincnt=1, gridsize=40, linewidths=0, 
+                      xscale = 'log',
+                      extent = (0, 4.4, 0, 1),
+                      norm = matplotlib.colors.LogNorm());
 
-        g.map_dataframe(annotate_correlation, x_col=x_col_log, y_col=y_col)
-        g.map_dataframe(plot_trend,           x_col=x_col_log, y_col=y_col, n_bins=100)
+            g.map_dataframe(annotate_correlation, x_col=x_col_log, y_col=y_col)
+            g.map_dataframe(plot_trend,           x_col=x_col_log, y_col=y_col, n_bins=100)
+
+            cax = g.fig.add_axes([0.8, alpha, 0.03, 0.25]) # x0, y0, width, height
+
+            cb = plt.colorbar(cax=cax)
+            cb.set_label("# of enriched terms")
 
         g.set_xlabels('term size')
         g.set_ylabels("enrichment effect size")
         g.set_titles(col_template="{col_name}")
 
 
-        cax = g.fig.add_axes([0.8, 0.05, 0.03, 0.25]) # x0, y0, width, height
-
-        cb = plt.colorbar(cax=cax)
-        cb.set_label("# of enriched terms")
 
     plt.tight_layout()   
     utils.savefig_multiformat(effect_plot_by_database_file)
@@ -395,19 +408,20 @@ if __name__ == "__main__":
     # R   = scipy.stats.pearsonr( sigQTermDf.abs_effect_size, sigQTermDf.log_term_size)[0]
 
 
-    alpha = 0.05
     with talk:
         fig = plt.figure(figsize = (6,4.5));
         ax = fig.gca()
-        hb = ax.hexbin(data = sigQTermDf, 
-                   y = 'abs_effect_size',
-                   x = 'term_size',
-                   mincnt = 1,
-                   xscale = 'log',
-                   extent = (0, 4.4, 0, 1),
-                   norm = matplotlib.colors.LogNorm(),
-                  );
-        fig.colorbar(hb).set_label("# of enriched terms");
+        
+        if len(sigQTermDf) > 0:
+            hb = ax.hexbin(data = sigQTermDf, 
+                       y = 'abs_effect_size',
+                       x = 'term_size',
+                       mincnt = 1,
+                       xscale = 'log',
+                       extent = (0, 4.4, 0, 1),
+                       norm = matplotlib.colors.LogNorm(),
+                      );
+            fig.colorbar(hb).set_label("# of enriched terms");
         ax.set_xlabel("term size");
         ax.set_ylabel("enrichment effect size");
 
@@ -436,11 +450,17 @@ if __name__ == "__main__":
     with talk:
         g = sns.FacetGrid(sigQTermDf, col = "database", col_wrap = 4, 
                           sharey=False, sharex=False, height=4, aspect=1);
-        g = g.map(plt.hexbin, x_col, y_col, 
-                  mincnt=1, gridsize=40, linewidths=0, 
-                  xscale = 'log',
-                  extent = (0, 4.4, 0, 1),
-                  norm = matplotlib.colors.LogNorm());
+        if len(sigQTermDf) > 0:
+            g = g.map(plt.hexbin, x_col, y_col, 
+                      mincnt=1, gridsize=40, linewidths=0, 
+                      xscale = 'log',
+                      extent = (0, 4.4, 0, 1),
+                      norm = matplotlib.colors.LogNorm());
+            
+            cax = g.fig.add_axes([0.8, alpha, 0.03, 0.25]) # x0, y0, width, height
+            cb = plt.colorbar(cax=cax)
+            cb.set_label("# of enriched terms")
+
 
         g.map_dataframe(annotate_correlation, x_col=x_col_log, y_col=y_col)
         g.map_dataframe(plot_trend,           x_col=x_col_log, y_col=y_col, n_bins=100)
@@ -449,10 +469,6 @@ if __name__ == "__main__":
         g.set_ylabels("enrichment effect size")
         g.set_titles(col_template="{col_name}")
 
-
-        cax = g.fig.add_axes([0.8, 0.05, 0.03, 0.25]) # x0, y0, width, height
-        cb = plt.colorbar(cax=cax)
-        cb.set_label("# of enriched terms")
 
     g.fig.tight_layout()
     utils.savefig_multiformat(effect_plot_FDR_by_database_file)

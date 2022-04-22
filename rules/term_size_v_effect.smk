@@ -1,23 +1,32 @@
 rule downsample_PubMed:
     input:
-        "data/results/cameraPR/overlap_{_min}-{_max}/aggregation/aggregated.txt"
+        effect_file = "data/results/cameraPR/overlap_{_min}-{_max}/effect_size/{dataId}.{taxId}.{db}.tsv"
     output:
-        expand("data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/effect_size/{fname}", fname = glob_wildcards("data/results/cameraPR/overlap_{_min}-{_max}/effect_size/{fname}").fname)
+        sampled_effect_file = "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/effect_size/{dataId}.{taxId}.{db}.tsv"
     params:
-        input_dir = "data/results/cameraPR/overlap_{_min}-{_max}/effect_size",
-        sampling_factor = 100,
-        output_dir = "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/effect_size"
+        sampling_factor = 100
     log:
-        "logs/downsample_PubMed.overlap_{_min}-{_max}.log"
+        "logs/downsample_PubMed/overlap_{_min}-{_max}/{dataId}.{taxId}.{db}.log"
     shell:
-        "scripts/downsample_PubMed_enrichments.sh {params.input_dir} {params.sampling_factor} {params.output_dir} &> {log}"
-        
-        
-        
+        "scripts/downsample_single_PubMed_enrichment.sh {input.effect_file} {params.sampling_factor} {output.sampled_effect_file} &> {log}"
+
+
+def collect_downsampled_PubMed(wildcards):
+
+    filtered_dedup_dir = checkpoints.apply_deduplication.get().output[1]
+    DATAIDS, TAXIDS = glob_wildcards(os.path.join(filtered_dedup_dir,"{dataId}.{taxId}.input.tsv"))
+
+    result_files =  expand(
+                        expand("data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/effect_size/{dataId}.{taxId}.{db}.tsv",
+                        zip, dataId = DATAIDS, taxId = TAXIDS, allow_missing = True),
+                    db = DATABASES, allow_missing = True)
+                
+    return result_files
+
+
 rule collect_cameraPR_downsampled_PubMed:
     input:
-        expand("data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/effect_size/{fname}",
-               fname = glob_wildcards("data/results/cameraPR/overlap_{_min}-{_max}/effect_size/{fname}").fname)
+        collect_downsampled_PubMed
     output:
         "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/aggregated.txt"
     log:
@@ -34,12 +43,12 @@ rule write_cameraPR_termDf_downsampled_PubMed:
         enrichment_files_file = "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/aggregated.txt",
         species_taxIds_file = "data/raw/species.v11.0.txt"
     output:
-        "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/sigTermDf.tsv",
-        "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/dataId_isSig.tsv"
+        "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/sigTermDf_alpha1.0.tsv",
+        "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/dataId_isSig_alpha1.0.tsv"
     params:
-        alpha = 1,
+        alpha = 1.0, #get also insignificant terms for plotting term size
         n_grouped_species = 8,
-        output_dir = "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation",
+        output_dir = lambda wildcards, output: os.path.dirname(output[0]),
         enrichment_method = "cameraPR"
     log:
         "logs/write_cameraPR_termDf_downsampled_PubMed.overlap_{_min}-{_max}.log"
@@ -53,7 +62,7 @@ rule write_cameraPR_termDf_downsampled_PubMed:
 rule plot_term_size_v_effect:
     input:
         "data/raw/global_enrichment_annotations/9606.terms_members.tsv",
-        "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/sigTermDf.tsv"
+        "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/sigTermDf_alpha1.0.tsv"
     output:
         "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_pval.svg",
         "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_pval_by_database.svg",
@@ -70,3 +79,4 @@ rule plot_term_size_v_effect:
         "../envs/py38_plotting.yml"
     shell:
         "python scripts/plot_term_size_v_effect.py {input} {output} >& {log}"
+

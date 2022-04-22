@@ -101,10 +101,10 @@ rule write_cameraPR_termDf:
         enrichment_files_file = "data/results/cameraPR/overlap_{_min}-{_max}/aggregation/aggregated.txt",
         species_taxIds_file = "data/raw/species.v11.0.txt"
     output:
-        "data/results/cameraPR/overlap_{_min}-{_max}/aggregation/sigTermDf.tsv",
-        "data/results/cameraPR/overlap_{_min}-{_max}/aggregation/dataId_isSig.tsv"
+        "data/results/cameraPR/overlap_{_min}-{_max}/aggregation/sigTermDf_alpha"+str(ALPHA)+".tsv",
+        "data/results/cameraPR/overlap_{_min}-{_max}/aggregation/dataId_isSig_alpha"+str(ALPHA)+".tsv"
     params:
-        alpha = 0.05,
+        alpha = ALPHA,
         n_grouped_species = 8,
         enrichment_method = "cameraPR",
         output_dir = lambda wildcards, input: os.path.dirname(input[0])
@@ -119,10 +119,11 @@ rule write_cameraPR_termDf:
 
 rule plot_metrics:
     input:
-        dataId_isSig_file = "data/results/cameraPR/overlap_{_min}-{_max}/aggregation/dataId_isSig.tsv",
-        sigTerm_file = "data/results/cameraPR/overlap_{_min}-{_max}/aggregation/sigTermDf.tsv"
+        dataId_isSig_file = "data/results/cameraPR/overlap_{_min}-{_max}/aggregation/dataId_isSig_alpha"+str(ALPHA)+".tsv",
+        sigTerm_file = "data/results/cameraPR/overlap_{_min}-{_max}/aggregation/sigTermDf_alpha"+str(ALPHA)+".tsv"
     output:
         "figures/cameraPR/overlap_{_min}-{_max}/{species_subset}_species/at_least_one_significant_facetGrid.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/{species_subset}_species/at_least_one_significant_facetGrid_vertical.svg",
         "figures/cameraPR/overlap_{_min}-{_max}/{species_subset}_species/nr_sig_terms_per_user_input.svg"
     params:
         output_dir = lambda wildcards, output: os.path.dirname(output[0]),
