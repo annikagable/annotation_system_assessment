@@ -4,7 +4,13 @@ import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-
+unique_per_db_and_species_column_order = ['dataId', 
+                                          'database', 
+                                          'uniqueTermCount', 
+                                          'taxId', 
+                                          'species',
+                                          'species_group']
+    
 def discard_term_subsets(df):
     unique_terms = []
     isUnique_list = []
@@ -107,7 +113,7 @@ def determine_uniqueness_across_databases_per_term(sigTermDf, databases, min_uni
 
     
 
-def count_unique_terms(sigTermDf_unique_within_db, sigTermDf, isUniqueAcross, databases):
+def count_unique_terms(sigTermDf_unique_within_db, sigTermDf, isUniqueAcross, databases, column_order):
         
     if isUniqueAcross:
         ## count the number of unique terms for each dataId and each database
@@ -152,6 +158,9 @@ def count_unique_terms(sigTermDf_unique_within_db, sigTermDf, isUniqueAcross, da
     unique_terms_species_df.loc[:,'database'] = pd.Categorical(unique_terms_species_df.database, 
                                                               ordered = True,
                                                               categories = databases)
+    
+    ## sort the columns
+    unique_terms_species_df = unique_terms_species_df.loc[:, column_order]
     
     
     return unique_terms_species_df

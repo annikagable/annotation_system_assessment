@@ -64,14 +64,14 @@ rule plot_term_size_v_effect:
         "data/raw/global_enrichment_annotations/9606.terms_members.tsv",
         "data/results/cameraPR/overlap_{_min}-{_max}/downsampled_PubMed/aggregation/sigTermDf_alpha1.0.tsv"
     output:
-        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_pval.svg",
-        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_pval_by_database.svg",
-        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_effect_size.svg",
-        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_effect_size_all_terms.svg",
-        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_effect_size_by_database.svg",
-        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_effect_size_FDR.svg",
-        "figures/cameraPR/overlap_{_min}-{_max}/9606.term_size_v_effect_size_FDR_by_database.svg",
-        "figures/cameraPR/overlap_{_min}-{_max}/9606.sig_v_insig_term_size.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/term_size/9606.term_size_v_pval.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/term_size/9606.term_size_v_pval_by_database.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/term_size/9606.term_size_v_effect_size.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/term_size/9606.term_size_v_effect_size_all_terms.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/term_size/9606.term_size_v_effect_size_by_database.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/term_size/9606.term_size_v_effect_size_FDR.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/term_size/9606.term_size_v_effect_size_FDR_by_database.svg",
+        "figures/cameraPR/overlap_{_min}-{_max}/term_size/9606.sig_v_insig_term_size.svg",
         "data/results/cameraPR/overlap_{_min}-{_max}/term_size_v_effect_correlations.tsv" 
     log:
         "logs/plot_term_size_v_effect.overlap_{_min}-{_max}.log"

@@ -7,6 +7,7 @@ import utils
 import sys
 
 def plot_novelty(any_unique_terms_data, input_counts, ylabel):
+    
     h = sns.catplot(data = any_unique_terms_data,
                 kind = "count",
                 x = "database",
@@ -29,24 +30,13 @@ def plot_novelty(any_unique_terms_data, input_counts, ylabel):
     h.axes[0,0].set_ylabel(ylabel)
     
 
-    
-def remove_species_and_rename_other(df, drop_species, rename_category):
-    """
-    Remove the species in drop_species, and rename the "other" category to 
-    "rarely_requested_species".
-    """
-    df = df.loc[~df.species_group.isin(drop_species),:].copy()
-    df.species_group.cat.remove_unused_categories(inplace = True)
-    df.species_group.cat.rename_categories(rename_category, inplace = True)
-    
-    return df
 
 _, dataId_isSig_file, unique_sigTermDf_file, novelty_plot_file, novelty_plot_reduced_file = sys.argv
 
-# dataId_isSig_file     = "data/results/cameraPR/aggregation/dataId_isSig.tsv"
-# unique_sigTermDf_file = "data/results/cameraPR/redundancy_and_novelty/sigTermDf_unique_terms_across_and_within_databases.tsv"
-# novelty_plot_file         = "figures/cameraPR/redundancy_and_novelty/all_species/at_least_one_significant.svg"
-# novelty_plot_reduced_file = "figures/cameraPR/redundancy_and_novelty/reduced_species/at_least_one_significant.svg"
+# dataId_isSig_file     = "data/results/cameraPR/overlap_3-200/aggregation/dataId_isSig_alpha0.05.tsv"
+# unique_sigTermDf_file = "data/results/cameraPR/overlap_3-200/redundancy_and_novelty/sigTermDf_unique_terms_across_and_within_databases.tsv"
+# novelty_plot_file         = "figures/cameraPR/overlap_3-200/redundancy_and_novelty/all_species/at_least_one_significant.svg"
+# novelty_plot_reduced_file = "figures/cameraPR/overlap_3-200/redundancy_and_novelty/reduced_species/at_least_one_significant.svg"
 
 sns.set_context('talk')
 
@@ -66,11 +56,23 @@ sigTermDf_unique.loc[:,'species_group'] = pd.Categorical(sigTermDf_unique.specie
                                                     categories = species_group_order, 
                                                     ordered = True)
 
-# Count datasets with any unique terms
-group = sigTermDf_unique.groupby(["species_group","database", "dataId"])
-count_any_unique = group.term_shorthand.count()
-any_unique_terms_by_database = (count_any_unique > 0)
-any_unique_terms_by_database = any_unique_terms_by_database[any_unique_terms_by_database].reset_index()
+if len(sigTermDf_unique) == 0:
+    any_unique_terms_by_database = pd.DataFrame(columns = ['species_group', 'database', 'dataId', 'term_shorthand'])
+    any_unique_terms_by_database.loc[:,'database'] = pd.Categorical(any_unique_terms_by_database.database, 
+                                                        categories = dbColors.keys(), 
+                                                        ordered = True)
+    any_unique_terms_by_database.loc[:,'species_group'] = pd.Categorical(any_unique_terms_by_database.species_group, 
+                                                        categories = species_group_order, 
+                                                        ordered = True)
+    
+else:
+    # Count datasets with any unique terms
+    group = sigTermDf_unique.groupby(["species_group","database", "dataId"])
+    count_any_unique = group.term_shorthand.count()
+    any_unique_terms_by_database = (count_any_unique > 0)
+    any_unique_terms_by_database = any_unique_terms_by_database[any_unique_terms_by_database].reset_index()
+
+
 
 
 
@@ -85,9 +87,9 @@ input_counts.name = "all_input_counts"
 
 
 ## Remove two species and rename "other" species category ##
-any_unique_terms_by_database_reduced = remove_species_and_rename_other(df = any_unique_terms_by_database,
-                                                                       drop_species = drop_species,
-                                                                       rename_category = rename_category)
+any_unique_terms_by_database_reduced = utils.remove_species_and_rename_other(df = any_unique_terms_by_database,
+                                                                             drop_species = drop_species,
+                                                                             rename_category = rename_category)
 
 input_counts_reduced = input_counts[~input_counts.index.isin(drop_species)]
 input_counts_reduced.rename(rename_category, inplace = True)

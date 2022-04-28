@@ -86,11 +86,23 @@ etype_to_database = {
 
 species_group_order = np.array(['H.sapiens', 'M.musculus', 'R.norvegicus', 'D.melanogaster',
                        'A.thaliana','D.rerio', 'S.cerevisiae', 'E.coli', 'other'])
+# species_group_order_reduced = np.array(['H.sapiens', 'M.musculus', 'D.melanogaster',
+#                        'A.thaliana', 'S.cerevisiae', 'E.coli', 'rarely requested\norganisms'])
 drop_species = ["D.rerio", "R.norvegicus"] 
 rename_category = {'other': 'rarely requested\norganisms'}
 
-species_group_order_reduced = species_group_order[~np.isin(species_group_order,drop_species)]
-species_group_order_reduced[species_group_order_reduced == 'other'] = rename_category['other']
+
+def remove_species_and_rename_other(df, drop_species, rename_category):
+    """
+    Remove the species in drop_species, and rename the "other" category to 
+    "rarely_requested_species".
+    """
+    reduced_df = df.loc[~df.species_group.isin(drop_species),:].copy()
+    reduced_df.species_group.cat.remove_categories(drop_species, inplace = True)
+    reduced_df.species_group.cat.rename_categories(rename_category, inplace = True)
+    
+    return reduced_df
+
 
 
 
