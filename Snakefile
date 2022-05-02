@@ -69,6 +69,9 @@ rule all:
         "figures/cameraPR/overlap_3-200/redundancy_and_novelty/all_species/at_least_one_novel_significant.svg",
         "figures/cameraPR/overlap_3-200/redundancy_and_novelty/reduced_species/at_least_one_novel_significant.svg",
         
+        "figures/cameraPR/overlap_3-200/unique_enriched_genes/9606/enrichment_specificity.svg",
+        "figures/cameraPR/overlap_3-200/unique_enriched_genes/9606/enrichment_specificity_legend.svg",
+
         "figures/input_analysis/input_count_and_input_size_by_species_group.svg",
 
         "data/results/filtering_report.txt",
