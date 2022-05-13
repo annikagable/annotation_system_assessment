@@ -117,7 +117,7 @@ rule write_cameraPR_termDf:
 
 
 
-rule plot_metrics:
+rule plot_enrichment_results:
     input:
         dataId_isSig_file = "data/results/cameraPR/overlap_{_min}-{_max}/aggregation/dataId_isSig_alpha"+str(ALPHA)+".tsv",
         sigTerm_file = "data/results/cameraPR/overlap_{_min}-{_max}/aggregation/sigTermDf_alpha"+str(ALPHA)+".tsv"
@@ -129,8 +129,8 @@ rule plot_metrics:
         output_dir = lambda wildcards, output: os.path.dirname(output[0]),
         species_subset = "{species_subset}"
     log:
-        "logs/plot_metrics/overlap_{_min}-{_max}.species_{species_subset}.log"
+        "logs/plot_enrichment_results/overlap_{_min}-{_max}.species_{species_subset}.log"
     conda:
         "../envs/py38_plotting.yml"
     shell:
-        "python scripts/plot_metrics.py {input.sigTerm_file} {input.dataId_isSig_file} {params.output_dir} {params.species_subset} &> {log}"
+        "python scripts/plot_enrichment_results.py {input.sigTerm_file} {input.dataId_isSig_file} {params.output_dir} {params.species_subset} &> {log}"
