@@ -12,44 +12,29 @@ import os
 import sys
 import numpy as np
 import pandas as pd
+import utils
+
+_, proteins_to_shorthands_file, protein_info_file, terms_members_file, output_dir, taxId, term_size_threshold = sys.argv
+
+# taxId=9606
+# lo, hi = 0, 250
+# proteins_to_shorthands_file = "data/raw/proteins_to_shorthands.v11.tsv"
+# protein_info_file = f"data/raw/{taxId}.protein.info.v11.0.txt.gz"
+# terms_members_file = f"data/raw/global_enrichment_annotations/{taxId}.terms_members.tsv"
+# output_dir = f"data/results/database_stats"
+
+lo = 0
+hi = int(term_size_threshold)
+term_size_limits = (lo, hi)
 
 
-taxId=9606
-term_size_limits = (0,250)
-lo, hi = term_size_limits
-proteins_to_shorthands_file = "data/raw/proteins_to_shorthands.v11.tsv"
-protein_info_file = f"data/raw/{taxId}.protein.info.v11.0.txt.gz"
-terms_members_file = f"data/raw/global_enrichment_annotations/{taxId}.terms_members.tsv"
+# output files
+term_coverage_file = os.path.join(output_dir, f"term_coverage_per_gene_{lo}-{hi}.tsv") 
+genome_coverage_file = os.path.join(output_dir, f"genome_coverage_{lo}-{hi}.tsv")
+percent_genome_coverage_file = os.path.join(output_dir, f"percent_genome_coverage_{lo}-{hi}.tsv")
 
-term_coverage_file = f"data/results/database_stats/{taxId}.term_coverage_per_gene_{lo}-{hi}.tsv"
-genome_coverage_file = f"data/results/database_stats/{taxId}.genome_coverage_{lo}-{hi}.tsv"
-percent_genome_coverage_file = f"data/results/database_stats/{taxId}.percent_genome_coverage_{lo}-{hi}.tsv"
-
-etype_to_database = {
-    -78: 'STRINGclusters',
-    -57: 'Reactome',
-    -56: 'PubMed',
-    -55: 'Pfam',
-    -54: 'InterPro',
-    -53: 'SMART',
-    -52: 'KEGG',
-    -51: 'UniProt',
-    -23: 'GO_MF',
-    -22: 'GO_CC',
-    -21: 'GO_BP'
-}
-
-dbColors = pd.Series({"Reactome": "#FFA52B",
-                      "KEGG": "#C79D36",
-                      "UniProt": "#F0F01F",
-                      "GO_BP": "#2ECC71",
-                      "GO_CC": "#229954",
-                      "GO_MF": "#44DEBD",
-                      "SMART": "#AD86FF", 
-                      "Pfam": "#8E44AD",
-                      "InterPro": "#AF7AC5",
-                      "STRINGclusters": "#E74C3C",
-                      "PubMed": "#95A5A6"}, name = 'color')
+etype_to_database = utils.etype_to_database
+dbColors = utils.dbColors
 
 
 def add_database_column(df, col, etype_to_database):
@@ -67,7 +52,7 @@ def add_database_column(df, col, etype_to_database):
 
 
 def count_term_coverage_per_protein_by_database(protein_info_shorthands, terms_members_file,
-                                                etype_to_database, term_size_limits = (0, np.inf)):
+                                                etype_to_database, term_size_limits):
     '''
     Count the occurrence of each protein in the term members file.
 
@@ -79,7 +64,7 @@ def count_term_coverage_per_protein_by_database(protein_info_shorthands, terms_m
                         term_member_shorthands]
     etype_to_database: dictionary with the translation of each entity type code aka etype to
                         the name of the annotation system aka database
-    term_size_limits: The minimum and maximum term size to be included in the coverage 
+    term_size_limits: Tuple. The minimum and maximum term size to be included in the coverage 
                       count.
     
     Returns dataframe with shorthands as index and 'normalized_term_count', 'term_count', 'database',
@@ -145,44 +130,6 @@ def count_term_coverage_per_protein_by_database(protein_info_shorthands, terms_m
 
 
 
-
-
-
-
-
-# Load protein info
-protein_info = pd.read_table(protein_info_file, 
-                             header = 0,
-                             names = ['stringId', 
-                                     'preferred_name', 
-                                     'protein_size', 
-                                     'annotation'])
-proteins_to_shorthands = pd.read_table(proteins_to_shorthands_file, 
-                                       header = None,
-                                       names = ["stringId", "shorthand"])
-protein_info_shorthands = protein_info.merge(proteins_to_shorthands)
-
-
-# calculate how many terms each gene is annotated in in each database
-term_coverage_per_gene = count_term_coverage_per_protein_by_database(protein_info_shorthands,
-                                                                      terms_members_file,
-                                                                      etype_to_database,
-                                                                      term_size_limits )
-
-
-# Check that for each gene/protein, there is one row per database
-assert len(term_coverage_per_gene)/ len(etype_to_database) == len(protein_info_shorthands)
-
-
-# Save to file
-term_coverage_per_gene.to_csv(term_coverage_file, sep = "\t", index = False)
-
-
-
-### Percentage of protein-coding genome covered by annotation
-### Create coverage categories: covered 0 times, once, twice, or three+ times.
-
-
 def get_stratified_genome_coverage(term_coverage_df):
     """
     Turn the dataframe with term count (i.e. how many terms of this database can this
@@ -211,6 +158,44 @@ def get_stratified_genome_coverage(term_coverage_df):
     
     return genome_coverage_df
 
+
+
+
+
+
+
+
+# Load protein info
+protein_info = pd.read_table(protein_info_file, 
+                             header = 0,
+                             names = ['stringId', 
+                                     'preferred_name', 
+                                     'protein_size', 
+                                     'annotation'])
+proteins_to_shorthands = pd.read_table(proteins_to_shorthands_file, 
+                                       header = None,
+                                       names = ["stringId", "shorthand"])
+protein_info_shorthands = protein_info.merge(proteins_to_shorthands)
+
+
+# calculate how many terms each gene is annotated in in each database
+term_coverage_per_gene = count_term_coverage_per_protein_by_database(protein_info_shorthands,
+                                                                      terms_members_file,
+                                                                      etype_to_database,
+                                                                      term_size_limits )
+
+
+# Check that for each gene/protein, there is one row per database
+assert len(term_coverage_per_gene)/ len(dbColors) == len(protein_info_shorthands)
+
+
+# Save to file
+term_coverage_per_gene.to_csv(term_coverage_file, sep = "\t", index = False)
+
+
+
+### Percentage of protein-coding genome covered by annotation
+### Create coverage categories: covered 0 times, once, twice, or three+ times.
 
 genome_coverage_df = get_stratified_genome_coverage(term_coverage_df = term_coverage_per_gene)
 genome_coverage_df.to_csv(genome_coverage_file, sep = "\t", index = True)

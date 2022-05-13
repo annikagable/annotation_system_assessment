@@ -88,8 +88,10 @@ include:
 include:
     "rules/term_size_v_effect.smk"
 include:
-    "rules/plot_user_input_stats.smk"
+    "rules/user_input_stats.smk"
 include:
     "rules/redundancy_and_novelty.smk"
 include:
     "rules/enrichment_specificity.smk"
+include:
+    "rules/database_stats.smk"
