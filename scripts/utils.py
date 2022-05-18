@@ -29,17 +29,21 @@ dbDashes = {"Reactome": (8,1,2, 1),
               "STRINGclusters": (3, 1, 1, 1),
               "PubMed": (3, 2)}
 
-dbNames = """Reactome pathways
-KEGG pathways
-UniProt keywords
-GO Biological Process
-GO Cellular Component
-GO Molecular Function
-SMART domains
-Pfam families
-InterPro entries
-STRING clusters
-tagged PubMed publications""".split("\n")
+dbNames = ["Reactome pathways",
+           "KEGG pathways",
+           "Uniprot keywords",
+           "GO Biological Process",
+           "GO Cellular Component",
+           "GO Molecular Function",
+           "SMART domains",
+           "Pfam families",
+           "InterPro entries",
+           "STRING clusters",
+           "tagged PubMed publications"]
+
+
+dbNames_break = dbNames
+dbNames_break[-1] = "tagged PubMed\npublications"
 
 database_to_etype = { 
     'GO_BP':-21,

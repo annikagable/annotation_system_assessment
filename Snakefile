@@ -16,7 +16,8 @@ DATABASES = ['STRINGclusters',
              #'GO_MF',
              #'GO_CC',
              #'GO_BP']
-
+USER_INPUT_FOLDER = "data/raw/string_11_0_gene_value_consolidated_input"  #"data/raw/example_user_queries"
+ 
 # significance threshold for enrichment 
 ALPHA = 0.05
 
@@ -30,7 +31,7 @@ def expand_plots_by_overlap_thresholds(wildcards):
     
     MINS, MAXS = zip(*OVERLAP_THRESHOLDS)
     
-    enrichment_plots = [
+    enr_plots = [
             "at_least_one_significant_facetGrid", 
             "nr_sig_terms_per_user_input",
             ]
@@ -46,39 +47,47 @@ def expand_plots_by_overlap_thresholds(wildcards):
         "9606.sig_v_insig_term_size"
         ]
 
-    enrichment_plot_files = expand(
-                                expand("figures/cameraPR/overlap_{_min}-{_max}/enriched_terms/{species_subset}_species/{plot}.svg", 
-                                zip, _min = MINS, _max = MAXS, allow_missing = True),
-                            species_subset = SPECIES_SUBSETS, plot = enrichment_plots)
+    enrichment_plots = expand(
+                           expand("figures/cameraPR/overlap_{_min}-{_max}/enriched_terms/{species_subset}_species/{plot}.svg", 
+                           zip, _min = MINS, _max = MAXS, allow_missing = True),
+                       species_subset = SPECIES_SUBSETS, plot = enr_plots)
 
     term_size_v_pval_plots = expand(
                                 expand("figures/cameraPR/overlap_{_min}-{_max}/term_size/{term_size_plot}.svg",
                                 zip, _min = MINS, _max = MAXS, allow_missing = True),
                              term_size_plot = term_size_plots)
 
+    redundancy_and_novelty_plots = expand(
+                                        expand("figures/cameraPR/overlap_{_min}-{_max}/redundancy_and_novelty/{species_subset}_species/{plot}",
+                                        zip, _min = MINS, _max = MAXS, allow_missing = True),
+                                   species_subset = SPECIES_SUBSETS, plot = ["nr_nonredundant_sig_terms_per_user_input.svg",
+                                                                             "at_least_one_novel_significant.svg"])
 
-    result_files = enrichment_plot_files + term_size_v_pval_plots
+    unique_enriched_genes_plots = expand("figures/cameraPR/overlap_{_min}-{_max}/unique_enriched_genes/9606/enrichment_specificity.svg",
+            #"figures/cameraPR/overlap_{_min}-{_max}/unique_enriched_genes/9606/enrichment_specificity_legend.svg",
+                                  zip, _min=MINS, _max = MAXS)
+
+    result_files = enrichment_plots + term_size_v_pval_plots + redundancy_and_novelty_plots + unique_enriched_genes_plots
+    
     return result_files
+
+
 
 rule all:
     input:
         expand_plots_by_overlap_thresholds,
-
-        "figures/cameraPR/overlap_3-200/redundancy_and_novelty/all_species/nr_nonredundant_sig_terms_per_user_input.svg",
-        "figures/cameraPR/overlap_3-200/redundancy_and_novelty/reduced_species/nr_nonredundant_sig_terms_per_user_input.svg",
-        "figures/cameraPR/overlap_3-200/redundancy_and_novelty/all_species/at_least_one_novel_significant.svg",
-        "figures/cameraPR/overlap_3-200/redundancy_and_novelty/reduced_species/at_least_one_novel_significant.svg",
-        
-        "figures/cameraPR/overlap_3-200/unique_enriched_genes/9606/enrichment_specificity.svg",
-        "figures/cameraPR/overlap_3-200/unique_enriched_genes/9606/enrichment_specificity_legend.svg",
-
         "figures/input_analysis/input_count_and_input_size_by_species_group.svg",
+
+        "figures/database_stats/9606.database_stats_0-250.pdf",
+        "figures/database_stats/9606.database_stats_0-Inf.pdf",
+        "figures/database_stats/7955.database_stats_0-250.pdf",
+
 
         "data/results/filtering_report.txt",
         "data/results/deduplicated_user_submission_counts_by_taxId.tsv",
 
         "data/results/cameraPR/overlap_0-Inf/term_size_v_effect_correlations.tsv", 
-        "data/results/cameraPR/overlap_3-200/term_size_v_effect_correlations.tsv", 
+        "data/results/cameraPR/overlap_3-200/term_size_v_effect_correlations.tsv" 
 
 
 include:

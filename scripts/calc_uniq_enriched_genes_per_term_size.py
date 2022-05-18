@@ -8,25 +8,25 @@ import sys
 import utils
 
 
-_, sigTermDf_file, hsa_members_file, taxId, cum_gene_unions_file, summary_cum_gene_unions_file = sys.argv
+_, sigTermDf_file, species_members_file, taxId, cum_gene_unions_file, summary_cum_gene_unions_file = sys.argv
 
 # taxId = 9606
 
 # ## Input files
 # sigTermDf_file = "data/results/cameraPR/overlap_3-200/aggregation/sigTermDf_alpha0.05.tsv" 
-# hsa_members_file = "data/raw/global_enrichment_annotations/9606.terms_members.tsv"
+# species_members_file = "data/raw/global_enrichment_annotations/9606.terms_members.tsv"
 
 ## Output files
 # # computed on all possible term sizes => for plotting summary curves
-# summary_cum_gene_unions_file = "data/results/cameraPR/overlap_3-200/unique_enriched_genes/mean_median_percentiles_of_cum_gene_union_by_term_size.tsv"
+# summary_cum_gene_unions_file = "data/results/cameraPR/overlap_3-200/unique_enriched_genes/9606/mean_median_percentiles_of_cum_gene_union_by_term_size.tsv"
 # # computed only on existing term sizes => for plotting individual users curves
-# cum_gene_unions_file= "data/results/cameraPR/overlap_3-200/unique_enriched_genes/cumulative_gene_unions_by_term_size.tsv"
+# cum_gene_unions_file= "data/results/cameraPR/overlap_3-200/unique_enriched_genes/9606/cumulative_gene_unions_by_term_size.tsv"
 
 
 # sigTermDf_file = "data/results/cameraPR/overlap_0-Inf/aggregation/sigTermDf_alpha0.05.tsv" 
-# hsa_members_file = "data/raw/global_enrichment_annotations/9606.terms_members.tsv"
-# summary_cum_gene_unions_file = "data/results/cameraPR/overlap_0-Inf/unique_enriched_genes/mean_median_percentiles_of_cum_gene_union_by_term_size.tsv"
-# cum_gene_unions_file= "data/results/cameraPR/overlap_0-Inf/unique_enriched_genes/cumulative_gene_unions_by_term_size.tsv"
+# species_members_file = "data/raw/global_enrichment_annotations/9606.terms_members.tsv"
+# summary_cum_gene_unions_file = "data/results/cameraPR/overlap_0-Inf/unique_enriched_genes/9606/mean_median_percentiles_of_cum_gene_union_by_term_size.tsv"
+# cum_gene_unions_file= "data/results/cameraPR/overlap_0-Inf/unique_enriched_genes/9606/cumulative_gene_unions_by_term_size.tsv"
 
 
 def uniquify(df_term_sizes):
@@ -107,7 +107,7 @@ def get_percentiles(df, size_column, grouping_columns, percentiles):
 
 dbColors = utils.dbColors
 percentile_band = (47.5, 52.5)
-
+taxId = int(taxId)
 
 # define which columns the output dataframes should have
 gene_unions_by_term_size_columns = ['term_size', 'species', 'species_group', 
@@ -149,10 +149,10 @@ else:
 
 
     ## import raw term sizes
-    hsa_members = pd.read_table(hsa_members_file, usecols = [0,2], names = ["term_shorthand", "term_size"])
+    species_members = pd.read_table(species_members_file, usecols = [0,2], names = ["term_shorthand", "term_size"])
 
     # join enriched terms with raw term sizes
-    df_term_sizes = df.merge(hsa_members)
+    df_term_sizes = df.merge(species_members)
 
     # get enriched gene unions by database and term size
     gene_unions_by_term_size = uniquify(df_term_sizes)
@@ -176,6 +176,7 @@ else:
 # enrichment
 
 if len(df) == 0:
+    # create empty dataframe
     cum_gene_unions_by_term_size = pd.DataFrame(columns = cum_gene_unions_by_term_size_columns)
 else:
     cum_gene_unions_by_term_size = uniquify_thresholded(gene_unions_by_term_size)
@@ -196,6 +197,7 @@ cum_gene_unions_by_term_size.to_csv(cum_gene_unions_file,
 # Therefore I need to add missing combinations of term size and database
 
 if len(df) == 0:
+    # create empty dataframe
     summary_cum_gene_union_df = pd.DataFrame(columns = summary_cum_gene_union_df_columns)
 else:
     

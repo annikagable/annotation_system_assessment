@@ -9,8 +9,7 @@
 
 rule filter_inputs:
     input:
-        "data/raw/example_user_queries"
-        #ancient("data/raw/string_11_0_gene_value_consolidated_input")
+        USER_INPUT_FOLDER
     output:
         "data/interim/filtered_user_inputs.tsv",
     conda:
@@ -135,5 +134,5 @@ rule enumerate_user_inputs:
     output:
         "data/results/user_input_enumeration.tsv"
     shell:
-        """basename -a $(ls data/raw/string_11_0_gene_value_consolidated_input/*.input.normal.txt) | cut -d'.' -f1 | awk 'BEGIN{{OFS="\t"}}{{print $0,NR}}' > {output}"""
+        """basename -a $(ls {USER_INPUT_FOLDER}/*.input.normal.txt) | cut -d'.' -f1 | awk 'BEGIN{{OFS="\t"}}{{print $0,NR}}' > {output}"""
 

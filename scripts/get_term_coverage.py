@@ -17,15 +17,17 @@ import utils
 _, proteins_to_shorthands_file, protein_info_file, terms_members_file, output_dir, taxId, term_size_threshold = sys.argv
 
 # taxId=9606
-# lo, hi = 0, 250
+# term_size_threshold = 250 #or Inf
 # proteins_to_shorthands_file = "data/raw/proteins_to_shorthands.v11.tsv"
 # protein_info_file = f"data/raw/{taxId}.protein.info.v11.0.txt.gz"
 # terms_members_file = f"data/raw/global_enrichment_annotations/{taxId}.terms_members.tsv"
 # output_dir = f"data/results/database_stats"
 
 lo = 0
-hi = int(term_size_threshold)
-term_size_limits = (lo, hi)
+hi = term_size_threshold # string
+
+term_size_threshold = np.inf if hi  == "Inf" else int(hi)
+term_size_limits = (lo, term_size_threshold)
 
 
 # output files

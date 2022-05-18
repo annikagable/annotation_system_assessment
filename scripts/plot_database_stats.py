@@ -1,5 +1,9 @@
 ## Plot term size, nr of terms per gene and % genome coverage
 ## call in py38_mpl35 environment
+# When using the py38_mpl35 environment for plotting, affinity designer does not correctly
+# import svg files, see bug report here https://github.com/matplotlib/matplotlib/issues/20910
+# Therefore, I'm using pdf as output for now. The matplotlib version 3.5 gives much nicer looking plots than 3.1.
+
 import os
 import sys
 import numpy as np
@@ -8,54 +12,40 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.transforms as trans
+import utils
 
-hsa_members_file = "data/raw/global_enrichment_annotations/9606.terms_members.tsv"
+_, term_coverage_file, genome_coverage_file, percent_genome_coverage_file, species_members_file, database_stats_file = sys.argv
 
-taxId=9606
-term_size_limits = (0,250)
-lo, hi = term_size_limits
-term_coverage_file = f"data/results/database_stats/{taxId}.term_coverage_per_gene_{lo}-{hi}.tsv"
-genome_coverage_file = f"data/results/database_stats/{taxId}.genome_coverage_{lo}-{hi}.tsv"
-percent_genome_coverage_file = f"data/results/database_stats/{taxId}.percent_genome_coverage_{lo}-{hi}.tsv"
+## input
 
-# When using the py38_mpl35 environment for plotting, affinity designer does not correctly
-# import svg files, see bug report here https://github.com/matplotlib/matplotlib/issues/20910
-# Therefore, I'm using pdf for now. The new matplotlib version gives much nicer looking plots.
-database_stats_file = f"figures/database_stats/{taxId}.database_stats_{lo}-{hi}.pdf"
+# taxId=9606
+# term_size_threshold = 250
+# lo = 0
+# hi = int(term_size_threshold)
+# term_size_limits = (lo, hi)
+
+# term_coverage_file = f"data/results/database_stats/{taxId}.term_coverage_per_gene_{lo}-{hi}.tsv"
+# genome_coverage_file = f"data/results/database_stats/{taxId}.genome_coverage_{lo}-{hi}.tsv"
+# percent_genome_coverage_file = f"data/results/database_stats/{taxId}.percent_genome_coverage_{lo}-{hi}.tsv"
+# species_members_file = "data/raw/global_enrichment_annotations/9606.terms_members.tsv"
+
+## output
+# database_stats_file = f"figures/database_stats/{taxId}.database_stats_{lo}-{hi}.pdf"
 
 plt.rcParams['font.sans-serif'] = ['Arial']
+plt.rcParams['font.size'] = 9
 plt.rcParams['lines.markersize'] = 1
 plt.rcParams['axes.grid'] = True
+plt.rcParams['axes.grid.axis'] = 'x'
+plt.rcParams['grid.alpha'] = 0.5
 plt.rcParams['xtick.bottom'] = False
 plt.rcParams['patch.edgecolor'] = 'black'
 
-dbColors = pd.Series({"Reactome": "#FFA52B",
-                      "KEGG": "#C79D36",
-                      "UniProt": "#F0F01F",
-                      "GO_BP": "#2ECC71",
-                      "GO_CC": "#229954",
-                      "GO_MF": "#44DEBD",
-                      "SMART": "#AD86FF", 
-                      "Pfam": "#8E44AD",
-                      "InterPro": "#AF7AC5",
-                      "STRINGclusters": "#E74C3C",
-                      "PubMed": "#95A5A6"}, name = 'color')
+dbColors = utils.dbColors
+etype_to_database = utils.etype_to_database
+database_names = utils.dbNames_break
 
 
-
-etype_to_database = {
-    -78: 'STRINGclusters',
-    -57: 'Reactome',
-    -56: 'PubMed',
-    -55: 'Pfam',
-    -54: 'InterPro',
-    -53: 'SMART',
-    -52: 'KEGG',
-    -51: 'UniProt',
-    -23: 'GO_MF',
-    -22: 'GO_CC',
-    -21: 'GO_BP'
-}
 
 def add_database_column(df, col, etype_to_database):
     
@@ -70,8 +60,8 @@ def add_database_column(df, col, etype_to_database):
     return df
 
 
-hsa_members = pd.read_table(hsa_members_file, usecols = [0,1,2], names = ["term_id", "etype", "term_size"])
-hsa_members_db = add_database_column(df = hsa_members, col = "etype", etype_to_database = etype_to_database)
+species_members = pd.read_table(species_members_file, usecols = [0,1,2], names = ["term_id", "etype", "term_size"])
+species_members_db = add_database_column(df = species_members, col = "etype", etype_to_database = etype_to_database)
 
 
 term_coverage_df = pd.read_table(term_coverage_file)
@@ -89,13 +79,13 @@ percent_genome_coverage_df = pd.read_table(percent_genome_coverage_file, index_c
 # # fig.subplots_adjust(wspace=0, hspace =0)
 
 # # Plot each graph
-# sns.countplot(data = hsa_members_db, y = "database", 
+# sns.countplot(data = species_members_db, y = "database", 
 #               palette = dbColors, order = dbColors.index, 
 #               log = True, ax = axs[0]);
 # axs[0].set_ylabel("");
 # axs[0].set_xlabel("# terms");
 
-# sns.boxenplot(data = hsa_members_db, x = 'term_size', y = 'database', orient = 'h', ax = axs[1], 
+# sns.boxenplot(data = species_members_db, x = 'term_size', y = 'database', orient = 'h', ax = axs[1], 
 #               palette = dbColors, order = dbColors.index);
 # axs[1].tick_params(left = False)
 # axs[1].set_xscale("log")
@@ -142,14 +132,14 @@ percent_genome_coverage_df = pd.read_table(percent_genome_coverage_file, index_c
 #                        )
 # fig.subplots_adjust(wspace=0, hspace = 0)
 # # number of terms
-# sns.countplot(data = hsa_members_db, y = "database", 
+# sns.countplot(data = species_members_db, y = "database", 
 #               palette = dbColors, order = dbColors.index, 
 #               log = True, ax = axs[0]);
 # axs[0].set_ylabel("");
 # axs[0].set_xlabel("# terms");
 
 # # term sizes
-# sns.boxenplot(data = hsa_members_db, x = 'term_size', y = 'database', orient = 'h', ax = axs[1], 
+# sns.boxenplot(data = species_members_db, x = 'term_size', y = 'database', orient = 'h', ax = axs[1], 
 #               palette = dbColors, order = dbColors.index);
 # axs[1].tick_params(left = False)
 # axs[1].set_xscale("log")
@@ -178,18 +168,6 @@ percent_genome_coverage_df = pd.read_table(percent_genome_coverage_file, index_c
 
 
 ################## Plot all together, except number of terms ###############################
-database_names = ["Reactome pathways",
-                  "KEGG pathways",
-                  "Uniprot keywords",
-                  "GO Biological Process",
-                  "GO Cellular Component",
-                  "GO Molecular Function",
-                  "SMART domains",
-                  "Pfam families",
-                  "InterPro entries",
-                  "STRING clusters",
-                  "tagged PubMed\npublications"]
-
 mm = 1/25.4  # millimeter in inches
 fig, axs = plt.subplots(1, 3, sharey=True, 
                         figsize = (8*21*mm,7*21*mm)
@@ -198,7 +176,7 @@ fig, axs = plt.subplots(1, 3, sharey=True,
 fig.subplots_adjust(wspace=0, hspace = 0)
 
 # term sizes
-sns.boxenplot(data = hsa_members_db, x = 'term_size', y = 'database', 
+sns.boxenplot(data = species_members_db, x = 'term_size', y = 'database', 
               orient = 'h', ax = axs[0], 
               palette = dbColors, order = dbColors.index,
               linewidth = 1);
@@ -217,7 +195,7 @@ g = sns.boxenplot(data = term_coverage_df, y = "database", x = "term_count",
 axs[1].tick_params(left = False)
 axs[1].set_xscale('symlog')
 axs[1].set_ylabel('')
-axs[1].set_xlabel('# of terms per gene')
+axs[1].set_xlabel('terms per gene')
 axs[1].set_xlim(-0.5,None)
 # trying to bottom-align the 0 with the other xtick labels - doesn't work =(
 # xtick_locations = axs[1].get_xticks()
@@ -231,9 +209,9 @@ axs[1].set_xlim(-0.5,None)
 cover_colors = '#b7308b #eb7655 #f8e326 #787878'.split()
 percent_genome_coverage_df.plot(kind = 'barh', stacked = True, color = cover_colors, ax = axs[2]);
 plt.tick_params(left = False)
-plt.legend(title = "# terms per gene", bbox_to_anchor=(0.5, 1.05), 
+plt.legend(title = "# of terms per gene", bbox_to_anchor=(0.5, 1.05), 
            loc='lower center', borderaxespad=0., frameon = False);
-plt.xlabel('% of protein-coding genome covered');
+plt.xlabel('protein-coding genome covered (%)');
 plt.xlim(0, 100)
 plt.gca().invert_yaxis()
 
@@ -248,4 +226,5 @@ tight_bbox_raw_x0y0 = np.array(axs[0].get_tightbbox(fig.canvas.get_renderer()))
 tight_bbox_raw_x1y1 = np.array(axs[2].get_tightbbox(fig.canvas.get_renderer()))
 tight_bbox_raw = trans.Bbox([tight_bbox_raw_x0y0[0], tight_bbox_raw_x1y1[1]])
 tight_bbox = trans.TransformedBbox(tight_bbox_raw, trans.Affine2D().scale(1./fig.dpi))
-plt.savefig(database_stats_file, dpi = 300, transparent = True, bbox_inches=tight_bbox)
+plt.savefig(database_stats_file, dpi = 300, transparent = True, bbox_inches=tight_bbox, 
+            metadata = {'Title': os.path.basename(database_stats_file)})
