@@ -9,7 +9,7 @@
 
 rule filter_inputs:
     input:
-        USER_INPUT_FOLDER
+        USER_INPUT_DIR
     output:
         "data/interim/filtered_user_inputs.tsv",
     conda:
@@ -130,9 +130,9 @@ rule report_filtered_and_deduplicated_count:
 
 rule enumerate_user_inputs:
     input:
-        "data/raw/string_11_0_gene_value_consolidated_input"
+        USER_INPUT_DIR
     output:
         "data/results/user_input_enumeration.tsv"
     shell:
-        """basename -a $(ls {USER_INPUT_FOLDER}/*.input.normal.txt) | cut -d'.' -f1 | awk 'BEGIN{{OFS="\t"}}{{print $0,NR}}' > {output}"""
+        """basename -a $(ls {input}/*.input.normal.txt) | cut -d'.' -f1 | awk 'BEGIN{{OFS="\t"}}{{print $0,NR}}' > {output}"""
 

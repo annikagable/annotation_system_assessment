@@ -6,18 +6,20 @@ SPECIES_SUBSETS = ["all", "reduced"]
 OVERLAP_THRESHOLDS = [(3,200), (0, "Inf")]
 MINS, MAXS = zip(*OVERLAP_THRESHOLDS)
 DATABASES = ['STRINGclusters',
-             #'Reactome',
-             #'PubMed',
-             #'Pfam',
-             #'InterPro',
-             'SMART']
-             #'KEGG',
-             #'UniProt',
-             #'GO_MF',
-             #'GO_CC',
-             #'GO_BP']
-USER_INPUT_FOLDER = "data/raw/string_11_0_gene_value_consolidated_input"  #"data/raw/example_user_queries"
- 
+             'Reactome',
+             'PubMed',
+             'Pfam',
+             'InterPro',
+             'SMART',
+             'KEGG',
+             'UniProt',
+             'GO_MF',
+             'GO_CC',
+             'GO_BP']
+USER_INPUT_DIR = "data/raw/string_11_0_gene_value_consolidated_input"  #"data/raw/example_user_queries" #not used yet
+#ANNOTATION_DIR = "data/raw/global_enrichment_annotations" #not used yet
+
+
 # significance threshold for enrichment 
 ALPHA = 0.05
 
