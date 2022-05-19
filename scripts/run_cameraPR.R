@@ -31,8 +31,8 @@ aggregated_infile <- snakemake@input[["aggregated_infile"]]
 # MIN_OVERLAP <- 3
 # MAX_OVERLAP <- 200
 
-MIN_OVERLAP <- snakemake@params[['min_overlap']]
-MAX_OVERLAP <- snakemake@params[['max_overlap']]
+MIN_OVERLAP <- as.numeric(snakemake@params[['min_overlap']])
+MAX_OVERLAP <- as.numeric(snakemake@params[['max_overlap']])
 
 empty_result <-  data.frame(list("term_shorthand" = vector(mode = "character"),
                                  "overlap"        = vector(mode = "numeric"),
@@ -43,11 +43,7 @@ empty_result <-  data.frame(list("term_shorthand" = vector(mode = "character"),
                                  ))
 
 
-filter_terms <- function(term_members, 
-                         input_proteins = names(gene_value_vector), 
-                         mi = MIN_OVERLAP, 
-                         ma = MAX_OVERLAP){
-
+filter_terms <- function(term_members, input_proteins, mi, ma){
     term_members_filtered <- term_members
     intersection <- intersect(term_members, input_proteins)
     overlap <- length(intersection)
@@ -62,14 +58,12 @@ filter_terms <- function(term_members,
 print("Reading gene sets.")
 term_list <- readRDS(database_file)
 
-
-print("Reading user input.")
 if ((term_list == '') || (length(term_list) == 0)){
-    
+    print("No gene sets available, returning empty results.")
     ## create an empty result dataframe in case there are no terms for this database
     enrich_result <- empty_result
 }else{
-
+    print("Reading user input.")
     ## read in the user input file
     gene_value <- read.table(infile, col.names = c('shorthand', 'value'), stringsAsFactors = FALSE)
     gene_value_vector <- setNames(gene_value$value, gene_value$shorthand)
@@ -81,17 +75,18 @@ if ((term_list == '') || (length(term_list) == 0)){
     ## and MAX_OVERLAP) get included in enrichment analysis. This filtering does not change 
     ## the set size yet though because this is done by limma's enrichment function.
 
-    print("Filtering gene sets by input.")
-    print(paste("Keep gene sets that overlap with input by minimum of", 
-                  as.character(MIN_OVERLAP), "and", 
-                  as.character(MAX_OVERLAP), "."))
-
     if ((MIN_OVERLAP == 0) && (MAX_OVERLAP == Inf)){
        
+        print("Not filtering gene sets because there are no boundaries on the overlap with user input.")
         # save time by skipping filtering
         term_list_filtered <- term_list
 
     }else{
+
+        print("Filtering gene sets by input.")
+        print(paste("Keep gene sets that overlap with input by minimum of", 
+                      as.character(MIN_OVERLAP), "and", 
+                      as.character(MAX_OVERLAP), "."))
 
         term_list_filtered <- lapply(term_list, filter_terms,
                                      input_proteins = names(gene_value_vector), 
@@ -101,16 +96,18 @@ if ((term_list == '') || (length(term_list) == 0)){
         term_list_filtered <- term_list_filtered[!sapply(term_list_filtered, is.null)]
     }
   
-    print("Running cameraPR.")
+    print("Running ids2indices to get genes actually present in the input.")
     ## get a named list of indices that correspond to the shorthands that are actually present in the given input
     pathway_indices <- limma::ids2indices(gene.sets = term_list_filtered, 
                                           identifiers = names(gene_value_vector),
                                           remove.empty = TRUE)
     
     if (length(pathway_indices) == 0){
+        print("No overlap between pathways and user input. Returning empty result.")
         # no overlap between the pathways and the user input
         enrich_result <- empty_result
     }else{
+        print("Running cameraPR.")
         ## do camera preranked enrichment
         enrich_result_without_genes <- limma::cameraPR(statistic = gene_value_vector, 
                                          index = pathway_indices, 
@@ -125,7 +122,6 @@ if ((term_list == '') || (length(term_list) == 0)){
         }
         
         print("Getting the enriched genes")
-    
         # get the genes that are the overlap between the pathway and the input
         filter_by_existing_and_paste <- function(x, genes_in_input){
             filtered_genes <- genes_in_input[x]
@@ -137,6 +133,7 @@ if ((term_list == '') || (length(term_list) == 0)){
                                      filter_by_existing_and_paste, 
                                      genes_in_input = genes_in_input)
         
+        print("Adding enriched genes to the enriched pathway result table.")
         # sort pathways by the order they are in in the enrich_result_without_genes table
         overlap_genes <- overlap_genes[rownames(enrich_result_without_genes)]
         
