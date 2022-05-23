@@ -32,6 +32,8 @@ checkpoint separate_inputs_by_species:
         directory("data/interim/species_matrices") # this is where e.g. 9606.tsv files will go for each species
     conda:
         "../envs/py38_sklearn.yml"
+    log:
+        "logs/separate_inputs_by_species.log"
     shell:
         "python scripts/separate_inputs_by_species.py {input} data/interim/species_matrices"
 
