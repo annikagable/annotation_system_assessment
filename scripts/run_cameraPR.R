@@ -1,7 +1,7 @@
 ## This script runs cameraPR, an enrichment function from the limma package, on one user input for one database.
 ## Potential error sources were an empty term list or empty pathway indices because cameraPR does not take care of this itself. 
 ## Therefore I needed to check those myself
-
+library(tictoc)
 ## write all stdout and stderr to a log file
 log_file <- snakemake@log[["log_file"]]
 log_fh <- file(log_file, open = "wt")
@@ -33,6 +33,8 @@ aggregated_infile <- snakemake@input[["aggregated_infile"]]
 
 MIN_OVERLAP <- as.numeric(snakemake@params[['min_overlap']])
 MAX_OVERLAP <- as.numeric(snakemake@params[['max_overlap']])
+
+tic("whole script")
 
 empty_result <-  data.frame(list("term_shorthand" = vector(mode = "character"),
                                  "overlap"        = vector(mode = "numeric"),
@@ -84,43 +86,49 @@ if ((term_list == '') || (length(term_list) == 0)){
     }else{
 
         print("Filtering gene sets by input.")
-        print(paste("Keep gene sets that overlap with input by minimum of", 
-                      as.character(MIN_OVERLAP), "and", 
-                      as.character(MAX_OVERLAP), "."))
-
+        print(paste0("(Keep gene sets that overlap with input by minimum of ", 
+                      as.character(MIN_OVERLAP), " and ", 
+                      as.character(MAX_OVERLAP), ".)"))
+        tic("filter term list")
         term_list_filtered <- lapply(term_list, filter_terms,
                                      input_proteins = names(gene_value_vector), 
                                      mi = MIN_OVERLAP, 
                                      ma = MAX_OVERLAP)
         # remove the NULL elements (these list elements should not be counted in multiple testing)
         term_list_filtered <- term_list_filtered[!sapply(term_list_filtered, is.null)]
+        toc()
     }
   
     print("Running ids2indices to get genes actually present in the input.")
+    tic("run ids2indices")
     ## get a named list of indices that correspond to the shorthands that are actually present in the given input
     pathway_indices <- limma::ids2indices(gene.sets = term_list_filtered, 
                                           identifiers = names(gene_value_vector),
                                           remove.empty = TRUE)
-    
+    toc()
+
     if (length(pathway_indices) == 0){
         print("No overlap between pathways and user input. Returning empty result.")
         # no overlap between the pathways and the user input
         enrich_result <- empty_result
     }else{
         print("Running cameraPR.")
+        tic("run cameraPR")
         ## do camera preranked enrichment
         enrich_result_without_genes <- limma::cameraPR(statistic = gene_value_vector, 
                                          index = pathway_indices, 
                                          use.ranks = TRUE, 
                                          inter.gene.cor=0.01, 
                                          sort = TRUE)
-        
+        toc()
+
         ## FDR column will be missing if there is only one term.
         if(! "FDR" %in% colnames(enrich_result_without_genes)){
             FDR = enrich_result_without_genes$PValue[[1]]
             enrich_result_without_genes = cbind(enrich_result_without_genes, FDR)
         }
         
+        tic("add overlap genes")
         print("Getting the enriched genes")
         # get the genes that are the overlap between the pathway and the input
         filter_by_existing_and_paste <- function(x, genes_in_input){
@@ -132,7 +140,7 @@ if ((term_list == '') || (length(term_list) == 0)){
         overlap_genes <- sapply(pathway_indices,
                                      filter_by_existing_and_paste, 
                                      genes_in_input = genes_in_input)
-        
+
         print("Adding enriched genes to the enriched pathway result table.")
         # sort pathways by the order they are in in the enrich_result_without_genes table
         overlap_genes <- overlap_genes[rownames(enrich_result_without_genes)]
@@ -143,6 +151,7 @@ if ((term_list == '') || (length(term_list) == 0)){
                                             overlapping_genes_per_term, 
                                             by = "row.names",
                                             sort = FALSE)
+        toc()
         
         # rename the columns to something sensible
         colnames(enrich_result) <- c("term_shorthand",
@@ -159,11 +168,14 @@ if ((term_list == '') || (length(term_list) == 0)){
 
 ## write table with enriched pathways and their pvals to file
 print("Writing enrichment to file.")
+tic("write table to file")
 write.table(enrich_result, file = output_file, 
             append = FALSE, quote = FALSE, sep = "\t",
             eol = "\n", na = "NA", dec = ".",
             row.names = FALSE, col.names = TRUE)
+toc()
 
+toc()
 
 ## close connection to log file
 sink()

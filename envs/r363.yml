@@ -6,4 +6,5 @@ dependencies:
   - r-base=3.6.3
   - bioconductor-limma=3.42.0
   - r-ggplot2=3.3.2
+  - r-tictoc
 
