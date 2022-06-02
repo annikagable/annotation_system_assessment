@@ -3,8 +3,9 @@ import glob
 
 #configfile: "config.yaml"
 SPECIES_SUBSETS = ["all", "reduced"]
-OVERLAP_THRESHOLDS = [(3,200), (0, "Inf")]
+OVERLAP_THRESHOLDS = [(3,"Inf"), (0, "Inf")]
 MINS, MAXS = zip(*OVERLAP_THRESHOLDS)
+
 DATABASES = ['STRINGclusters',
              'Reactome',
              'PubMed',
@@ -25,7 +26,9 @@ ALPHA = 0.05
 
 wildcard_constraints:
     _min="[a-zA-Z0-9]+",
-    _max="[a-zA-Z0-9]+"
+    _max="[a-zA-Z0-9]+",
+    lo = "[a-zA-Z0-9]+",
+    hi = "[a-zA-Z0-9]+"
 
 #DATAIDS, TAXIDS = [["zDPnSS4z4TPV", "z4WZvoMHP74T"], ["9606", "10090"]]
 
@@ -80,16 +83,16 @@ rule all:
         expand_plots_by_overlap_thresholds,
         "figures/input_analysis/input_count_and_input_size_by_species_group.svg",
 
-        "figures/database_stats/9606.database_stats_0-250.pdf",
-        "figures/database_stats/9606.database_stats_0-Inf.pdf",
-        "figures/database_stats/7955.database_stats_0-250.pdf",
+        #"figures/database_stats/9606.database_stats.term_size_11708-Inf.pdf",
+        "figures/database_stats/9606.database_stats.term_size_0-250.pdf",
+        "figures/database_stats/9606.database_stats.term_size_0-Inf.pdf",
 
 
         "data/results/filtering_report.txt",
         "data/results/deduplicated_user_submission_counts_by_taxId.tsv",
 
-        "data/results/cameraPR/overlap_0-Inf/term_size_v_effect_correlations.tsv", 
-        "data/results/cameraPR/overlap_3-200/term_size_v_effect_correlations.tsv" 
+        expand("data/results/cameraPR/overlap_{_min}-{_max}/term_size_v_effect_correlations.tsv",
+                zip, _min = MINS, _max = MAXS) 
 
 
 include:
