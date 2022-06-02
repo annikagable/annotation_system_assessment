@@ -31,12 +31,13 @@ def plot_novelty(any_unique_terms_data, input_counts, ylabel):
     
 
 
-_, dataId_isSig_file, unique_sigTermDf_file, novelty_plot_file, novelty_plot_reduced_file = sys.argv
+_, dataId_isSig_file, unique_sigTermDf_file, novelty_plot_file, novelty_plot_reduced_file, novel_count_file = sys.argv
 
-# dataId_isSig_file     = "data/results/cameraPR/overlap_3-200/aggregation/dataId_isSig_alpha0.05.tsv"
-# unique_sigTermDf_file = "data/results/cameraPR/overlap_3-200/redundancy_and_novelty/sigTermDf_unique_terms_across_and_within_databases.tsv"
-# novelty_plot_file         = "figures/cameraPR/overlap_3-200/redundancy_and_novelty/all_species/at_least_one_significant.svg"
-# novelty_plot_reduced_file = "figures/cameraPR/overlap_3-200/redundancy_and_novelty/reduced_species/at_least_one_significant.svg"
+# dataId_isSig_file     = "data/results/cameraPR/overlap_3-Inf/aggregation/dataId_isSig_alpha0.05.tsv"
+# unique_sigTermDf_file = "data/results/cameraPR/overlap_3-Inf/redundancy_and_novelty/sigTermDf_unique_terms_across_and_within_databases.tsv"
+# novelty_plot_file         = "figures/cameraPR/overlap_3-Inf/redundancy_and_novelty/all_species/at_least_one_novel_significant.svg"
+# novelty_plot_reduced_file = "figures/cameraPR/overlap_3-Inf/redundancy_and_novelty/reduced_species/at_least_one_novel_significant.svg"
+# novel_count_file = "data/results/cameraPR/overlap_3-Inf/redundancy_and_novelty/novel_enriched_count.tsv"
 
 sns.set_context('talk')
 
@@ -73,7 +74,8 @@ else:
     any_unique_terms_by_database = any_unique_terms_by_database[any_unique_terms_by_database].reset_index()
 
 
-
+novel_enriched_input_count = any_unique_terms_by_database.groupby(["species_group", "database"]).apply(len).rename("novel_enriched_count").reset_index()
+novel_enriched_input_count.to_csv(novel_count_file, sep = "\t", index = False)
 
 
 ## Get total number of inputs in each species group ##

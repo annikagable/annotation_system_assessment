@@ -46,7 +46,8 @@ rule plot_database_novelty:
         unique_sigTermDf_file = "data/results/cameraPR/overlap_{_min}-{_max}/redundancy_and_novelty/sigTermDf_unique_terms_across_and_within_databases.tsv"
     output:
         novelty_plot_file         = "figures/cameraPR/overlap_{_min}-{_max}/redundancy_and_novelty/all_species/at_least_one_novel_significant.svg",
-        novelty_plot_reduced_file = "figures/cameraPR/overlap_{_min}-{_max}/redundancy_and_novelty/reduced_species/at_least_one_novel_significant.svg"
+        novelty_plot_reduced_file = "figures/cameraPR/overlap_{_min}-{_max}/redundancy_and_novelty/reduced_species/at_least_one_novel_significant.svg",
+        novel_count_file = "data/results/cameraPR/overlap_{_min}-{_max}/redundancy_and_novelty/novel_enriched_count.tsv"
     log:
         "logs/plot_database_novelty/overlap_{_min}-{_max}.log"
     conda:
