@@ -24,8 +24,8 @@ rule plot_enrichment_specificity:
         summary_cum_gene_unions_file = "data/results/cameraPR/overlap_{_min}-{_max}/unique_enriched_genes/{taxId}/mean_median_percentiles_of_cum_gene_union_by_term_size.tsv",
         cum_gene_unions_file = "data/results/cameraPR/overlap_{_min}-{_max}/unique_enriched_genes/{taxId}/cumulative_gene_unions_by_term_size.tsv"
     output:
-        enrichment_specificity_file = "figures/cameraPR/overlap_{_min}-{_max}/unique_enriched_genes/{taxId}/enrichment_specificity.svg",
-        enrichment_specificity_legend_file = "figures/cameraPR/overlap_{_min}-{_max}/unique_enriched_genes/{taxId}/enrichment_specificity_legend.svg"
+        enrichment_specificity_file = "figures/cameraPR/overlap_{_min}-{_max}/unique_enriched_genes/{taxId}/enrichment_specificity.pdf",
+        enrichment_specificity_legend_file = "figures/cameraPR/overlap_{_min}-{_max}/unique_enriched_genes/{taxId}/enrichment_specificity_legend.pdf"
     log:
         "logs/plot_enrichment_specificity/{taxId}.overlap_{_min}-{_max}.log"
     conda:
