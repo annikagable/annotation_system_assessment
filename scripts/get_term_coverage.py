@@ -1,5 +1,5 @@
 # Count the number of terms each gene/protein is annotated with, per annotation source.
-# Only terms smaller than 250 genes are counted in order to count specific terms only.
+# Optionally, only terms smaller than 250 genes are counted in order to count specific terms only.
 # An alternative is counting the terms and dividing each term count by the number of genes that
 # are annotated by this term, but since this is harder to understand and interpret, we are 
 # using a simple cutoff instead.
@@ -14,20 +14,18 @@ import numpy as np
 import pandas as pd
 import utils
 
-_, proteins_to_shorthands_file, protein_info_file, terms_members_file, output_dir, taxId, term_size_threshold = sys.argv
+_, proteins_to_shorthands_file, protein_info_file, terms_members_file, output_dir, taxId, lo, hi = sys.argv
 
 # taxId=9606
-# term_size_threshold = 250 #or Inf
 # proteins_to_shorthands_file = "data/raw/proteins_to_shorthands.v11.tsv"
 # protein_info_file = f"data/raw/{taxId}.protein.info.v11.0.txt.gz"
 # terms_members_file = f"data/raw/global_enrichment_annotations/{taxId}.terms_members.tsv"
-# output_dir = f"data/results/database_stats"
+# output_dir = f"data/results/database_stats/9606"
+# lo = 0
+# hi = "Inf" # or 250
 
-lo = 0
-hi = term_size_threshold # string
-
-term_size_threshold = np.inf if hi  == "Inf" else int(hi)
-term_size_limits = (lo, term_size_threshold)
+hi_numeric = np.inf if hi  == "Inf" else int(hi)
+term_size_limits = (int(lo), hi_numeric)
 
 
 # output files
