@@ -114,6 +114,7 @@ def savefig_multiformat(filename,
                         additional_formats=['png'], 
                         transparent = True,
                         dpi = 300,
+                        bbox_inches = "tight",
                         *args, 
                         **kwargs):
     '''
@@ -124,6 +125,7 @@ def savefig_multiformat(filename,
     fig.savefig(filename, 
                 transparent = transparent,
                 dpi = dpi,
+                bbox_inches = "tight",
                 *args,
                 **kwargs)
     
@@ -134,6 +136,7 @@ def savefig_multiformat(filename,
         fig.savefig(filename_wo_extension+ext,
                     transparent = transparent,
                     dpi = dpi,
+                    bbox_inches = "tight",
                     *args,
                     **kwargs)
         
