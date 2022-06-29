@@ -4,3 +4,5 @@ Snakemake pipeline to benchmark 11 functional annotation systems, including Gene
 
 Provided as code supplement to manuscript "Systematic assessment of pathway databases, based on a diverse collection of user-submitted experiments".
 Archived versions are on Zenodo at [![DOI](https://zenodo.org/badge/462784625.svg)](https://zenodo.org/badge/latestdoi/462784625).
+
+This version is just the filtering and deduplication.
