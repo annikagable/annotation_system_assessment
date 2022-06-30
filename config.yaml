@@ -1,0 +1,30 @@
+
+#user_input_dir: "data/raw/string_11_0_gene_value_consolidated_input"  
+#user_input_dir: "data/raw/STRING_global_enrichment_example_inputs"
+user_input_dir: "data/raw/deduplication_test_inputs"
+
+## input filtering parameters
+input_file_pattern: '*.input.normal.txt' # File name pattern of the user input files to be 
+                                         # used.
+min_finite_values: '500'  # Minimum number of finite values required to be in a user input
+                          # dataset for it to be included.
+min_unique_values: '10' # Minimum number of unique values required to be in a user input 
+                        # dataset for it to be included. 
+max_ratio_top_value_to_input_size: '0.8' # Maximum ratio which the most frequently occurring
+                                         # value in a user input dataset can have in relation
+                                         # to the length of the user input.
+
+## deduplication parameters
+min_overlap: '100' # minimum number of proteins/genes present in both datasets in order to
+                   # calculate a spearman correlation coefficient. Dataset pairs with less
+                   # overlap will get a correlation coefficient of 0.
+r2_threshold: '0.8' # If the squared Spearman correllation of the normal or absolute input
+                    # values between two or more datasets is larger than or equal to the 
+                    # threshold, they are considered duplicates.
+symm_diff_threshold: '2' # If the symmetric difference between two or more datasets is 
+                         # smaller than or equal to the threshold, they are considered 
+                         # duplicates.
+
+parallelization_threshold: '40' #The minimum number of user inputs for running the 
+                                # distance metric computation in parallel.
+

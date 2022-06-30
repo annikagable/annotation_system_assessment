@@ -1,8 +1,20 @@
-# Annotation system assessment
+# Filtering and deduplication of user submissions to STRING global enrichment
 
-Snakemake pipeline to benchmark 11 functional annotation systems, including Gene Ontology and KEGG, using a diverse collection of real-world gene set enrichment query data.
+This is a part of the snakemake pipeline annotation_system_assessment, as of June 29th, 2022.
 
-Provided as code supplement to manuscript "Systematic assessment of pathway databases, based on a diverse collection of user-submitted experiments".
-Archived versions are on Zenodo at [![DOI](https://zenodo.org/badge/462784625.svg)](https://zenodo.org/badge/latestdoi/462784625).
+The filtering and duplication settings here are what was being used for the manuscript
+"Systematic assessment of pathway databases, based on a diverse collection of user-submitted experiments".
 
-This version is just the filtering and deduplication.
+To use:
+
+Create a conda environment for running the pipeline:
+`conda env create -f envs/snakemake.yml`
+
+Activate the environment:
+`conda activate snakemake`
+
+Run the pipeline:
+`snakemake --use-conda --cores 10`
+
+In order to change the input directory and other parameters, edit the `config.yaml`.
+

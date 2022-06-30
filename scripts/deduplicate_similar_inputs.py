@@ -240,7 +240,20 @@ def remove_similar_inputs_of_one_species(data_matrix,
                                          nr_cores = 10,
                                          parallelization_threshold = 50):
     """
-    dedup_id_file: a file containing the taxId where all dataIds will be written to. 
+    Perform single linkage hierarchical clustering of the user input datasets by three different simililarity/distance metrics:
+    i) the Spearman R^2 correlation, ii) the Spearman R2 correlation of the absolute values and iii) the symmetric difference.
+    Datasets that cluster together in any of the three categories are considered duplicates.
+
+    min_overlap: The minimum number of genes/proteins that need to be in common between two datasets for a Spearman correlation 
+                 to be calculated. If less than min_overlap genes/proteins appear in both datasets, the R^2 will be set to zero.
+    r2_threshold: The Spearman correlation threshold above which clusters will not be merged. E.g. if two datasets have an R^2 of
+                  0.7, they are not considered duplicates if the r2 threshold is 0.8.
+    symm_diff_threshold: The symmetric difference between two clusters below which they will not be merged. I.e., if two datasets
+                         have a symmetric difference below the threshold, they are considered duplicates.
+    dedup_id_file: Path to an optional output file. If not None, all non-duplicate dataIds will be written into this file.
+    metric_matrix_dir: The output directory for the similarity/distance matrices calculated (for the datasets of one species).
+    nr_cores: Number of cores to use for parallel calculation of the similarity/distance matrices.
+    parallelization_threshold: The minimum number of user inputs for running the computation in parallel. 
 
     """
     nr_all_inputs = len(data_matrix)
@@ -365,22 +378,29 @@ def remove_similar_inputs_of_one_species(data_matrix,
 
 
 
-_, species_matrix_file, metric_matrix_dir, nr_cores, min_overlap, dedup_id_file  = sys.argv 
+_, species_matrix_file, \
+   nr_cores, parallelization_threshold, \
+   min_overlap, r2_threshold, symm_diff_threshold, \
+   metric_matrix_dir, dedup_id_file  = sys.argv 
+
 nr_cores = int(nr_cores)
+parallelization_threshold = int(parallelization_threshold)
 min_overlap = int(min_overlap)
+r2_threshold = float(r2_threshold)
+symm_diff_threshold = int(symm_diff_threshold)
 
 species_matrix = pd.read_table(species_matrix_file, index_col=0, header=0)
 
 ## For each species, calculate the metrics between inputs, cluster similar inputs, and keep only one cluster representative.  
 clustered_data, nr_of_inputs, non_duplicate_dataIds = \
                         remove_similar_inputs_of_one_species(data_matrix = species_matrix, 
-                                                                 min_overlap = min_overlap, 
-                                                                 r2_threshold = 0.8, 
-                                                                 symm_diff_threshold = 2, 
-                                                                 dedup_id_file = dedup_id_file, 
-                                                                 metric_matrix_dir = metric_matrix_dir,
-                                                                 nr_cores = nr_cores,
-                                                                 parallelization_threshold = 40)
+                                                             min_overlap = min_overlap, 
+                                                             r2_threshold = r2_threshold, 
+                                                             symm_diff_threshold = symm_diff_threshold, 
+                                                             dedup_id_file = dedup_id_file, 
+                                                             metric_matrix_dir = metric_matrix_dir,
+                                                             nr_cores = nr_cores,
+                                                             parallelization_threshold = parallelization_threshold)
 
 
 

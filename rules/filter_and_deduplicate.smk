@@ -1,15 +1,15 @@
 rule filter_inputs:
     input:
-        USER_INPUT_DIR
+        config["user_input_dir"]
     output:
         "data/interim/filtered_user_inputs.tsv",
     conda:
         "../envs/py38_sklearn.yml"
     params:
-        search_for = '*.input.normal.txt',
-        min_finite_values = '500',
-        min_unique_values = '10',
-        max_ratio_top_value_to_input_size = '0.8'
+        search_for = config["input_file_pattern"],
+        min_finite_values = config["min_finite_values"],
+        min_unique_values = config["min_unique_values"],
+        max_ratio_top_value_to_input_size = config["max_ratio_top_value_to_input_size"]
     log:
         "logs/filter_inputs.log"
     shell:
@@ -26,7 +26,7 @@ checkpoint separate_inputs_by_species:
     log:
         "logs/separate_inputs_by_species.log"
     shell:
-        "python scripts/separate_inputs_by_species.py {input} data/interim/species_matrices"
+        "python scripts/separate_inputs_by_species.py {input} {output} &> {log}"
 
 
 rule deduplicate_similar_inputs:
@@ -34,12 +34,15 @@ rule deduplicate_similar_inputs:
         species_matrix_dir = "data/interim/species_matrices",
         species_matrix_file = "data/interim/species_matrices/{taxId}.tsv"
     params:
+        parallelization_threshold = config["parallelization_threshold"],
+        min_overlap = config["min_overlap"],
+        r2_threshold = config["r2_threshold"],
+        symm_diff_threshold = config["symm_diff_threshold"],
         metric_matrix_dir = lambda wildcards, output: os.path.dirname(output[1]),
-        min_overlap = lambda wildcards, output: os.path.basename(output[1]).split('_')[1].split('.')[0]
     output:
         dedup_id_file     = "data/interim/deduplicated_dataIds/{taxId}.tsv",
-        spearman_file     = "data/interim/metric_matrices/{taxId}/spearman.overlap_100.tsv",
-        spearman_abs_file = "data/interim/metric_matrices/{taxId}/spearman_abs.overlap_100.tsv",
+        spearman_file     = "data/interim/metric_matrices/{taxId}/spearman.overlap_"+config["min_overlap"]+".tsv",
+        spearman_abs_file = "data/interim/metric_matrices/{taxId}/spearman_abs.overlap_"+config["min_overlap"]+".tsv",
         sym_diff_file     = "data/interim/metric_matrices/{taxId}/sym_diff.tsv",
         sl_cluster_file   = "data/interim/metric_matrices/{taxId}/single_linkage_clusters.tsv"
     threads:
@@ -49,7 +52,7 @@ rule deduplicate_similar_inputs:
     log:
         "logs/deduplication/{taxId}.log"
     shell:
-        "python scripts/deduplicate_similar_inputs.py {input.species_matrix_file} {params.metric_matrix_dir} {threads} {params.min_overlap} {output.dedup_id_file}  &> {log}"
+        "python scripts/deduplicate_similar_inputs.py {input.species_matrix_file} {threads} {params} {output.dedup_id_file}  &> {log}"
 
 
 
